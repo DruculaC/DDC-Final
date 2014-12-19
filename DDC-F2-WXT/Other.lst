@@ -1,0 +1,167 @@
+C51 COMPILER V9.51   OTHER                                                                 11/19/2014 09:49:10 PAGE 1   
+
+
+C51 COMPILER V9.51, COMPILATION OF MODULE OTHER
+OBJECT MODULE PLACED IN .\Other.obj
+COMPILER INVOKED BY: D:\Program Files (x86)\keil\C51\BIN\C51.EXE ..\Library\Other.c ROM(COMPACT) BROWSE INCDIR(..\Librar
+                    -y) DEBUG OBJECTEXTEND PRINT(.\Other.lst) OBJECT(.\Other.obj)
+
+line level    source
+
+   1          /*---------------------------------------------------
+   2                  Other.c (v1.00)
+   3                  
+   4                  其他程序
+   5          ---------------------------------------------------*/
+   6          
+   7          #include "main.h"
+   8          #include "port.h"
+   9          
+  10          #include "Other.h"
+  11          #include "Delay.h"
+  12          #include "communication.h"
+  13          
+  14          /*------- Public variable declarations --------------------------*/
+  15          extern bit position_sensor_EN;                  
+  16          extern bit fell_flag;                                           
+  17          extern bit raised_flag;                                 
+  18          extern tByte sensor_trigger_count;      
+  19          extern tByte sensor_1ststage_count;     
+  20          extern tWord sensor_3rdstage_time;                      
+  21          extern tByte sensor_3rdstage_effcount;          
+  22          extern tByte sensor_3rdstage_count;                     
+  23          extern tWord sensor_3rdstage_interval;          
+  24          extern tWord sensor_2ndstage_time;              
+  25          extern tByte sensor_2ndstage_count;             
+  26          extern bit stolen_alarm_flag;                                   
+  27          extern bit host_stolen_alarm1_EN;      
+  28          extern bit host_stolen_alarm2_EN;     
+  29          extern tByte host_stolen_alarm1_count;          
+  30          extern tByte host_stolen_alarm2_count;  
+  31          extern bit raised_fell_flag;                                    
+  32          extern bit wire_broken_flag;                    
+  33          extern tByte wire_broken_count;         
+  34          extern bit battery_stolen_EN;                   
+  35          extern tByte battery_stolen_count;      
+  36          extern bit sensor_EN;
+  37          extern tByte enable_sensor_delay_count;         
+  38          extern bit enable_sensor_delayEN;
+  39          
+  40          /*-------------------------------------------------------
+  41                  magnet_CW()
+  42                  电磁铁正转，顺时针，将锁打开，
+  43          --------------------------------------------------------*/
+  44          void magnet_CW(tWord x, y, tByte z)
+  45                  {
+  46   1              // 发送开锁密码
+  47   1              send_code_to_lock(ComMode_1, z);
+  48   1              
+  49   1              MagentControl_1 = 0;
+  50   1              MagentControl_2 = 1;
+  51   1              Magnet_Delay(x, y);
+  52   1              MagentControl_1 = 1;
+  53   1              MagentControl_2 = 1;
+  54   1              motor_lock = 0;
+C51 COMPILER V9.51   OTHER                                                                 11/19/2014 09:49:10 PAGE 2   
+
+  55   1              }
+  56          
+  57          /*-------------------------------------------------------
+  58                  magnet_ACW()
+  59                  电磁铁反转，逆时针，将锁关闭
+  60          --------------------------------------------------------*/
+  61          void magnet_ACW(tWord x, y)
+  62                  {
+  63   1              motor_lock = 1;
+  64   1              MagentControl_1 = 1;
+  65   1              MagentControl_2 = 0;
+  66   1              Magnet_Delay(x, y);
+  67   1              MagentControl_1 = 1;
+  68   1              MagentControl_2 = 1;
+  69   1              }
+  70                  
+  71          /*----------------------------------------------------
+  72                  disable_sensor()
+  73                  打开振动传感器和三轴传感器，并将其复位
+  74          ----------------------------------------------------*/
+  75          void disable_sensor(void)
+  76                  {
+  77   1              // disable position sensor(vertical and horizontal) and vibration sensor
+  78   1              position_sensor_EN = 0; 
+  79   1              sensor_EN = 0;
+  80   1              // reset all the flag in sensor
+  81   1              fell_flag=0;  
+  82   1              raised_flag=0;
+  83   1              sensor_trigger_count = 0;
+  84   1              sensor_1ststage_count = 0;
+  85   1              sensor_2ndstage_count = 0;
+  86   1              sensor_2ndstage_time = 0;
+  87   1              sensor_3rdstage_time = 0;
+  88   1              sensor_3rdstage_interval = 0;
+  89   1              sensor_3rdstage_count = 0;
+  90   1              sensor_3rdstage_effcount = 0;
+  91   1              stolen_alarm_flag = 0;
+  92   1              host_stolen_alarm1_EN = 0;
+  93   1              host_stolen_alarm1_count = 0;
+  94   1              host_stolen_alarm2_EN = 0;
+  95   1              host_stolen_alarm2_count = 0;
+  96   1              
+  97   1              raised_fell_flag = 0;
+  98   1              
+  99   1              // reset the wire broken count
+ 100   1              wire_broken_count = 0;
+ 101   1              wire_broken_flag = 0;
+ 102   1              
+ 103   1              enable_sensor_delayEN = 0;
+ 104   1              enable_sensor_delay_count = 0;
+ 105   1              // reset battery stolen
+ 106   1              battery_stolen_EN = 0;
+ 107   1              battery_stolen_count = 0;       
+ 108   1              }
+ 109                  
+ 110          /*--------------------------------------------------------
+ 111                  enable_sensor()
+ 112                  打开传感器，使其检测振动
+ 113          ---------------------------------------------------------*/
+ 114          void enable_sensor(void)
+ 115                  {
+ 116   1              // enable position sensor(vertical and horizontal) and vibration sensor
+C51 COMPILER V9.51   OTHER                                                                 11/19/2014 09:49:10 PAGE 3   
+
+ 117   1              position_sensor_EN = 1; 
+ 118   1              sensor_EN = 1;
+ 119   1              // reset relatively sensor count
+ 120   1              sensor_trigger_count = 0;
+ 121   1              sensor_1ststage_count = 0;      
+ 122   1              enable_sensor_delayEN = 0;
+ 123   1              enable_sensor_delay_count = 0;  
+ 124   1              }
+ 125          
+ 126          /*----------------------------------------------------------------
+ 127                  Moto_Vibration()
+ 128                  用于附机，马达振动
+ 129          -----------------------------------------------------------------*/
+ 130          void Moto_Vibration(void)
+ 131                  {
+ 132   1              Moto_EN=0;                              
+ 133   1              Delay(5);
+ 134   1              Moto_EN=1;
+ 135   1              }
+ 136                  
+ 137          /*---------------------------------------------------
+ 138                  end of file
+ 139          ----------------------------------------------------*/
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    133    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----       4
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

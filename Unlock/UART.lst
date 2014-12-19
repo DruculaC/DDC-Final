@@ -1,0 +1,72 @@
+C51 COMPILER V9.51   UART                                                                  08/28/2014 15:47:45 PAGE 1   
+
+
+C51 COMPILER V9.51, COMPILATION OF MODULE UART
+OBJECT MODULE PLACED IN .\UART.obj
+COMPILER INVOKED BY: D:\Program Files (x86)\keil\C51\BIN\C51.EXE ..\Library\UART.c BROWSE INCDIR(..\Library) DEBUG OBJEC
+                    -TEXTEND PRINT(.\UART.lst) OBJECT(.\UART.obj)
+
+line level    source
+
+   1          #include "main.h"
+   2          #include "port.h"
+   3          
+   4          #include "uart.h"
+   5          
+   6          
+   7          /*--------------------------------------------------------------
+   8                  InitUART()
+   9                  初始化UART
+  10          --------------------------------------------------------------*/
+  11          void InitUART()
+  12                  {
+  13   1              AUXR1 &=0xbf ; 
+  14   1              SCON=0x5a;
+  15   1              TMOD=0x20;
+  16   1              TH1=TL1=-(OSC_FREQ/12/32/BAUD);
+  17   1              TR1=1;
+  18   1              }
+  19          
+  20          /*-----------------------------------------------------------
+  21                  SendData()
+  22                  发送一个字节，并等待发送结束
+  23          -----------------------------------------------------------*/
+  24          
+  25          void SendData(unsigned char dat)
+  26                  {
+  27   1              SBUF=dat;
+  28   1              while(!TI);
+  29   1              TI=0;   
+  30   1              }
+  31          
+  32          /*-----------------------------------------------------------
+  33                  void SendNByte()
+  34                  发送多个字节，
+  35          -----------------------------------------------------------*/
+  36          void SendNByte(unsigned char *buf, unsigned char len)
+  37                  {
+  38   1              while(len--)
+  39   1                      {
+  40   2                      SendData(*buf++);
+  41   2                      }
+  42   1              }
+  43          
+  44          /*---------------------------------------------------
+  45                  end of file
+  46          ----------------------------------------------------*/
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     62    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----       3
+C51 COMPILER V9.51   UART                                                                  08/28/2014 15:47:45 PAGE 2   
+
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

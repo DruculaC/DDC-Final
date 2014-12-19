@@ -1,0 +1,76 @@
+C51 COMPILER V9.51   UART                                                                  11/19/2014 14:04:37 PAGE 1   
+
+
+C51 COMPILER V9.51, COMPILATION OF MODULE UART
+OBJECT MODULE PLACED IN .\UART.obj
+COMPILER INVOKED BY: D:\Program Files (x86)\keil\C51\BIN\C51.EXE ..\Library\UART.c BROWSE INCDIR(..\Library) DEBUG OBJEC
+                    -TEXTEND PRINT(.\UART.lst) OBJECT(.\UART.obj)
+
+line level    source
+
+   1          /*-----------------------------------------------------------------*
+   2          
+   3                  Copyright(c) 2014 Techeart Technology Corp. All rights reserved.
+   4              Date: 11/Nov/2014
+   5              E-Mail: DruculaC@gmail.com
+   6          
+   7          *-----------------------------------------------------------------*/
+   8          
+   9          #include "main.h"
+  10          #include "port.h"
+  11          
+  12          #include "uart.h"
+  13          
+  14          /*--------------------------------------------------------------
+  15                  Initialize UART port.
+  16          --------------------------------------------------------------*/
+  17          void InitUART()
+  18                  {
+  19   1              AUXR1 &= 0xbf;          // Choose P1.0 P1.1 as UART port. 
+  20   1              SCON = 0x5a;        // Choose Mode 2.
+  21   1              TMOD = 0x20;        // Timer 1 is Mode 2, auto-reload.
+  22   1              TH1 = TL1 = -(OSC_FREQ/12/32/BAUD);
+  23   1              TR1 = 1;                        // Start Timer 1.
+  24   1              }
+  25          
+  26          /*-----------------------------------------------------------
+  27                  Send a Byte.
+  28          -----------------------------------------------------------*/
+  29          
+  30          void SendData(tByte dat)
+  31                  {
+  32   1              SBUF = dat;
+  33   1              while(!TI);
+  34   1              TI = 0; 
+  35   1              }
+  36          
+  37          /*-----------------------------------------------------------
+  38                  Send multiple bytes. 
+  39          -----------------------------------------------------------*/
+  40          void SendNByte(tByte *buf, tByte len)
+  41                  {
+  42   1              while(len--)
+  43   1                      {
+  44   2                      SendData(*buf++);
+  45   2                      }
+  46   1              }
+  47          
+  48          /*---------------------------------------------------
+  49                  end of file
+  50          ----------------------------------------------------*/
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     62    ----
+C51 COMPILER V9.51   UART                                                                  11/19/2014 14:04:37 PAGE 2   
+
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----       3
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

@@ -1,0 +1,302 @@
+C51 COMPILER V9.51   TIMER2                                                                07/07/2014 17:12:36 PAGE 1   
+
+
+C51 COMPILER V9.51, COMPILATION OF MODULE TIMER2
+OBJECT MODULE PLACED IN Timer2.OBJ
+COMPILER INVOKED BY: D:\Program Files (x86)\keil\C51\BIN\C51.EXE Timer2.c BROWSE INCDIR(..\Library) DEBUG OBJECTEXTEND
+
+line level    source
+
+   1          /*---------------------------------------------------
+   2                  Timer.c (v1.00)
+   3                  
+   4                  Timer functions
+   5          ---------------------------------------------------*/   
+   6          
+   7          #include "main.h"
+   8          #include "port.h"
+   9          
+  10          #include "Timer.h"
+  11          #include "communication.h"
+  12          #include "voice.h"
+  13          #include "Delay.h"
+  14          #include "Battery.h"
+  15          #include "AD.h"
+  16          #include "Other.h"
+  17          #include "operation.h"
+  18          
+  19          // ------ Public variable declarations -----------------------------
+  20          bit stolen_alarm_flag = 0;                                      // when host been touch 3 times, this flag 1 before alarm voice present, no
+             -t to detect sensor for 1st voice alarm.
+  21          bit host_stolen_speech_EN = 0;                  // when host been touch 3 times, enable 3rd alarm voice.
+  22          bit battery_check=0;                                                    // 2ÖÃ1Ê±£¬Ö´ĞĞÒ»´ÎµçÁ¿×ª»»£¬Ö´ĞĞÍêºó£¬½«ÆäÖÃ0
+  23          bit position_sensor_EN=0;               //Î»ÖÃ´«¸ĞÆ÷£¬¼´µ¹µØÌ§Æğ´«¸ĞÆ÷×Ü¿ª¹Ø£¬1µÄÊ±ºò£¬¼ì²âÕâÁ½¸ö´«¸ĞÆ÷
+  24          bit slave_away_speech_EN=0;      //ÅĞ¶Ï¸½»úÀë¿ªºó£¬ÓïÒôÌáÊ¾£¬ÔÚmainÀïÃæ²Ù×÷
+  25          bit magnet_CW_EN = 0;                                   //µç´ÅÌúË³Ê±Õë×ª¶¯Ê¹ÄÜ£¬×ª¶¯Ò»´Îºó¸´Î»Îª0
+  26          bit magnet_ACW_EN=0;                                            //µç´ÅÌúÄæÊ±Õë×ª¶¯Ê¹ÄÜ£¬×ª¶¯Ò»´Îºó¸´Î»Îª0
+  27          bit comm_whole_control=0;                               //Í¨ĞÅ×Ü¿ª¹Ø£¬0¹Ø±ÕÍ¨ĞÅ£¬1´ò¿ªÍ¨ĞÅ
+  28          tWord host_stolen_speech_count=0;   //ÅĞ¶ÏÖ÷»ú±»µÁºó£¬ÓïÒôÌáÊ¾µÄ´ÎÊı
+  29          bit slave_nearby_speech_EN=0;       //ÅĞ¶Ï¸½½ü¿¿½üºó£¬ÓïÒôÌáÊ¾£¬ÔÚmainÀïÃæ²Ù×÷
+  30          bit host_stolen_alarm1_EN = 0;      //ÅĞ¶ÏÎª±»µÁ±¨¾¯ºóµÄµÚÒ»¶ÎÓïÒôÊ¹ÄÜ
+  31          bit host_stolen_alarm2_EN = 0;      //ÅĞ¶ÏÎª±»µÁ±¨¾¯ºóµÄµÚ¶ş¶ÎÓïÒôÊ¹ÄÜ
+  32          tByte host_stolen_alarm1_count = 0;             //ÅĞ¶ÏÎª±»µÁ±¨¾¯ºóµÄµÚÒ»¶ÎÓïÒô´ÎÊı
+  33          tByte host_stolen_alarm2_count = 0;             //ÅĞ¶ÏÎª±»µÁ±¨¾¯ºóµÄµÚ¶ş¶ÎÓïÒô´ÎÊı
+  34          bit fell_flag=0;                                                //ÅĞ¶ÏÖ÷»úµ¹ÏÂºó£¬ÖÃ1
+  35          bit slave_away = 1;                                     // flag for slave, 1 means away, 0 means nearby
+  36          tByte leave_count=0;                                    // increment every 2s, reset for every success communication
+  37          bit raised_flag=0;                                      //ÅĞ¶ÏÖ÷»ú±»Ì§Æğºó£¬ÖÃ1
+  38          tByte sensor_2ndstage_LV_time=0;        //´«¸ĞÆ÷½øÈëµÚ¶ş½×¶Î¼ì²âÊ±£¬¼ÆËãµÍµçÆ½µÄÊ±¼ä
+  39          tByte sensor_2ndstage_count = 0;                //´«¸ĞÆ÷½øÈëµÚ¶ş½×¶Î¼ì²âÊ±£¬¼ÆËãµÍµçÆ½µÄÊ±¼ä
+  40          tByte host_2ndtouch_speech_count = 0;           //Ö÷»ú±»µÚ¶ş´Î´¥Åöºó£¬ÓïÒôÌáÊ¾µÄ´ÎÊı
+  41          tWord sensor_3rdstage_time = 0;                 //´«¸ĞÆ÷½øÈëµÚÈı½×¶ÎµÄÊ±¼ä£¬
+  42          tByte sensor_3rdstage_effcount = 0;             //´«¸ĞÆ÷½øÈëµÚÈı½×¶Îºó£¬ÓĞĞ§´¥Åö´ÎÊıµÄ¼ÆÊı
+  43          tByte sensor_3rdstage_count = 0;                        //´«¸ĞÆ÷½øÈëµÚÈı½×¶Îºó£¬µÍµçÆ½µÄ¼ÆÊı
+  44          tWord sensor_3rdstage_interval = 0;             //´«¸ĞÆ÷ÔÚµÚÈı½×¶ÎÖĞ£¬Ã¿´ÎÓĞĞ§µÍµçÆ½¼ÆÊıÖ®¼äµÄÊ±¼ä¼ä¸ô¡£ÔÚÕâÆÚ¼äµÄµÍµ
+             -çÆ½²»ÈÏÎªÓĞĞ§¡£
+  45          bit host_touch_speech_EN = 0;                           //µÚÒ»´Î´¥ÅöºóÓïÒôÊ¹ÄÜ
+  46          bit host_2ndtouch_speech_EN = 0;                        //µÚ¶ş´Î´¥ÅöºóÓïÒôÊ¹ÄÜ
+  47          bit raised_fell_flag = 0;                                       //µ¹µØ»òÕßÌ§Æğ´¥·¢ºó£¬´Ë±êÖ¾Î»ÖÃ1
+  48          tByte sensor_trigger_count=0;           //´«¸ĞÆ÷´¥·¢¼ÆÊı
+  49          tWord sensor_2ndstage_time=0;           //´«¸ĞÆ÷½øÈëµÚ¶ş½×¶ÎºóÁ÷ÊÅÊ±¼äµÄ¼ÆÊı
+  50          tByte sensor_1ststage_count=0;  //´«¸ĞÆ÷µÚÒ»½×¶ÎÅĞ¶ÏµÍµçÆ½µÄ¼ÆÊı
+  51          tByte nearby_away_interval = 0;         //¸½»úÀë¿ªºÍ¿¿½üÊ±£¬ÓïÒôÌáÊ¾ºÍ¿ª¹ØËøµÄÊ±¼ä¼ä¸ô
+  52          bit magnet_ACW_flag=0;
+  53          
+C51 COMPILER V9.51   TIMER2                                                                07/07/2014 17:12:36 PAGE 2   
+
+  54          // ------ Private variable definitions -----------------------------
+  55          tByte timer0_8H, timer0_8L, timer1_8H, timer1_8L;               // register value of timer0 and timer1, caculated from 
+             -InitTimer()
+  56          
+  57          tByte host_touch_speech_count=0;
+  58          tByte host_touched_flag=0;                      //Ö÷»ú±»´¥ÅöºóÖÃ1£¬½øĞĞºóÃæµÄ´«¸ĞÆ÷ÅĞ¶Ï
+  59          tByte raised_alarm_count = 0;    //Ö÷»ú±»Ì§Æğºó£¬Ïò¸½»ú·¢³ö±¨¾¯ĞÅºÅµÄ´ÎÊı
+  60          tByte fell_alarm_count=0;        //Ö÷»úµ¹µØºó£¬Ïò¸½»ú·¢³ö±¨¾¯ĞÅºÅµÄ´ÎÊı
+  61          tWord timer0_count=0;           // counter for timer0, increment every ticket                   
+  62          tByte received_data_buffer[7]={0x00,0x00,0x00,0x00,0x00,0x00,0x00};             //½ÓÊÕÊı¾İ»º´æ
+  63          bit receive_data_finished_flag = 0;             //½ÓÊÕÕâÒ»´®Êı¾İÍê³Éºó£¬´Ë±êÖ¾Î»ÖÃ1
+  64          tByte data_count = 0;                           //½ÓÊÕÊı¾İ»º´æµÄÎ»Êı£¬¼´±íÃ÷µÚ¼¸¸ö»º´æÊı¾İ
+  65          tByte one_receive_byte = 0;             //½ÓÊÕÊı¾İµÄÒ»¸ö×Ö½Ú£¬½ÓÊÕÍêºó½«Æä¸³Öµ¸øreceived_data_bufferÏà¶ÔÓ¦µÄ×Ö½Ú
+  66          tByte one_receive_byte_count = 0;                       //one_receive_byteÓĞ8Î»£¬´Ë¼ÆÊı±íÃ÷½ÓÊÕµ½µÚ¼¸Î»£¬Ã¿´Î¼ÆÊıµ½8µÄÊ±ºò±íÃ÷
+             -Ò»¸ö×Ö½Ú½ÓÊÕÍê³É¡£
+  67          bit receive_wire_flag = 1;              //½ÓÊÕÍ¨ĞÅÏßµÄ±êÖ¾Î»£¬1±íÃ÷¸ßµçÆ½£¬0±íÃ÷µÍµçÆ½£¬Ã¿´Îtimer1Òç³öÊ±£¬ÅĞ¶ÏP1.1Ò»´Î
+             -¡£ÒÔ´ËÀ´±íÃ÷ÊÇ·ñÎªÒ»´ÎÕıÈ·µÄÏÂ½µÑØ
+  68          tByte receive_HV_count = 0;             //¶¨Ê±Æ÷T1ÔÚÃ»ÓĞĞÅºÅµ½À´µÄÊ±ºò£¬¶Ô¸ßµçÆ½¼ÆÊı£¬Ò»µ©³¬¹ıÄ³¸öÖµ£¬Ôò½«one_receive
+             -_byte_countÇå0
+  69          tByte receive_LV_count = 0;             //Ã¿´Îtimer1Òç³öÊ±ÅĞ¶Ï½ÓÊÕÏßÈç¹ûÎªLV£¬Ôò¼ÆÊı¼Ó1£¬ÒÔ´ËÀ´±íÃ÷µÍµçÆ½µÄÊ±¼ä
+  70          tByte fell_wire_time=0;          //µ¹µØ¼ì²âÏß£¬¼ì²âµÍµçÆ½µÄÊ±¼ä
+  71          tByte raise_wire_time=0;                        //Ì§Æğ¼ì²âÏß£¬¼ì²âµÍµçÆ½µÄÊ±¼ä
+  72          tWord raised_fell_number = 0;                           //µ¹µØ»òÕßÌ§Æğ³ö·¢ºó£¬¼ÆÊı£¬µ½´ïÒ»¶¨ÊıÖµºó£¬½«ÆäÓë±êÖ¾Î»Ò»ÆğÇåÁã¡£
+  73          bit raised_fell_once_flag = 0;                  //raised_fell_flagÊÇ·ñÔø¾­±êÖ¾¹ı£¬Èç¹û±êÖ¾¹ıÔòÖÃ1.È»ºóÖ÷»ú±»»Ö¸´µ¹µØ»òÕß»
+             -Ö¸´Ì§ÆğÊ±£¬´Ë±êÖ¾Î»¸´Î»¡£
+  74          tByte key_rotated_on_flag=0;                    //µç¶¯³µ¿ªÆô¹Ø±Õ±êÖ¾Î»£¬1±íÊ¾µç¶¯³µ¿ªÆôÁË£¬0±íÊ¾µç¶¯³µ¹Ø±ÕÁË
+  75          tByte slave_nearby_speech_count=0;
+  76          tByte slave_away_speech_count=0;
+  77          tWord ADC_check_result = 0;             //×÷ÎªAD¼ì²âÖµ
+  78          bit slave_nearby_EN = 0;                        // ×÷Îªslave¿¿½üºó²Ù×÷µÄÊ¹ÄÜ
+  79          tByte slave_nearby_operation_count = 0; // ×÷Îªslave¿¿½üºó²Ù×÷µÄ´ÎÊı
+  80          tByte wire_broken_count = 0;            // ×÷Îª¶ÏÏßºóµÄÊ±¼ä¼ì²â
+  81          bit battery_stolen_EN = 0;                      // ×÷Îªµç³Ø±»µÁµÄÊ¹ÄÜ¶Ë
+  82          tByte battery_stolen_count = 0; // ×÷Îªµç³Ø±»µÁµÄ±¨¾¯´ÎÊı
+  83          bit horizontal_vibration = 0;           // ±íÊ¾´¹Ö±´«¸ĞÆ÷ÔÚÕñ¶¯£¬´ËÊ±¾ÍËã¹ØÔ¿³×£¬Ò²²»ÄÜÖ´ĞĞ¹ØÔ¿³×µÄ²Ù×÷¡
+  84          tWord horizontal_vibration_count = 0;   //´¹Ö±´«¸ĞÆ÷´¥·¢ºó£¬¶ÔÊ±¼ä½øĞĞ¼ÆÊı¡£
+  85          bit vibration_flag = 0;
+  86          tWord vibration_count = 0;
+  87          bit wire_broken_flag = 0;                       // ¼ô¶ÏËøÏßµÄ±êÖ¾Î»
+  88          tByte IDkey5 = IDkey0^IDkey1^IDkey2^IDkey3^IDkey4;              // ÓÉÇ°5Î»ÃÜÂë×é³ÉµÄÒì»ò
+  89          bit IDkey_flag = 0;                     // µ±ID¿¨¿¿½üÊ±ÈÏÖ¤Í¨¹ıºóÖÃ1£¬
+  90          tByte IDkey_count = 0;          // ID¿¨ÈÏÖ¤Í¨¹ıºó£¬¼ÆÊ±1·ÖÖÓ£¬Ê¹Ô¿³×ÄÜ×ª¶¯¡£
+  91          bit sensor_EN = 0;
+  92          tByte enable_sensor_delay_count = 0;            // ´«¸ĞÆ÷ÑÓ³ÙµÄÊ±¼ä
+  93          extern bit enable_sensor_delayEN;
+  94          bit sensor_3rdalarm_flag = 0;
+  95          bit wheeled_flag = 0;
+  96          tWord wheeled_count = 0;
+  97          
+  98          /*------------------------------------------------------------------
+  99                  timerT0()
+ 100                  operation every ticket.
+ 101          --------------------------------------------------------------------*/
+ 102          
+ 103          void timer0() interrupt interrupt_timer_0_overflow
+ 104                  {
+ 105   1              // manually reload timer0 configuration
+ 106   1              TH0 = timer0_8H;
+ 107   1              TL0 = timer0_8L;
+ 108   1              
+ 109   1              // ¼ì²âIDÈÏÖ¤Í¨¹ı£¬Í¬Ê±Ô¿³×´ò¿ªºóµÄ²Ù×÷£¬²¥±¨ÓïÒô¡£
+ 110   1              if((key_rotate == 1)&&(key_rotated_on_flag == 0)&&(IDkey_flag == 1))            
+C51 COMPILER V9.51   TIMER2                                                                07/07/2014 17:12:36 PAGE 3   
+
+ 111   1                      {                                                                        
+ 112   2                      Delay(5);
+ 113   2                      // anti-trigger, Delay(5) confirm the key rotation.
+ 114   2                      if(key_rotate == 1)
+ 115   2                              {
+ 116   3                  // speech for slave nearby
+ 117   3                              slave_nearby_speech();
+ 118   3      
+ 119   3                              key_rotated_on_flag = 1;
+ 120   3                              
+ 121   3                              IDkey_count = 0;
+ 122   3                              IDkey_flag = 0;                         
+ 123   3                              }
+ 124   2                      }
+ 125   1                      
+ 126   1              // ¹ØÔ¿³×µÄ²Ù×÷£¬¼ì²âÊÇ·ñÓĞÂÖ×ÓÔÚ×ª¶¯
+ 127   1              if((key_rotate == 0)&&(key_rotated_on_flag == 1))
+ 128   1                      {
+ 129   2                      if((vibration_flag == 0)&&(wheeled_flag == 0))
+ 130   2                              {
+ 131   3                              Delay(5);
+ 132   3                              if(key_rotate == 0)
+ 133   3                                      {
+ 134   4                                      // reset key rotation flag
+ 135   4                                      key_rotated_on_flag=0;
+ 136   4                                      
+ 137   4                                      slave_away_speech();    
+ 138   4                                      }                               
+ 139   3                              }
+ 140   2                      }
+ 141   1      
+ 142   1              // ²âÊÔÂÖ×ÓÔÚ×ª¶¯µÄÊ±ºò£¬²»ÄÜ¹ØËø
+ 143   1              if(wheeled_rotate == 1)
+ 144   1                      {
+ 145   2                      wheeled_flag = 1;
+ 146   2                      wheeled_count = 0;
+ 147   2                      }
+ 148   1              if(wheeled_flag == 1)
+ 149   1                      {
+ 150   2                      if(++wheeled_count >= 2000)
+ 151   2                              {
+ 152   3                              wheeled_flag = 0;
+ 153   3                              wheeled_count = 0;
+ 154   3                  }
+ 155   2                      }
+ 156   1      
+ 157   1              // ²âÊÔÕñ¶¯´«¸ĞÆ÷
+ 158   1              if((sensor_detect == 0)||(horizontal_sensor == 0))
+ 159   1                      {
+ 160   2                      if(++sensor_1ststage_count >= 2)                        
+ 161   2                              {
+ 162   3                              sensor_1ststage_count=0;
+ 163   3                              
+ 164   3                              host_touch_speech();
+ 165   3                              }
+ 166   2                      }
+ 167   1                                                                      
+ 168   1              // ÄÃµôËø£¬Ä£ÄâÓĞÈË¼ô¶ÏËøÏß£¬²¥±¨ÓïÒô
+ 169   1              if(wire_broken == 0) 
+ 170   1                      {
+ 171   2                      battery_stolen_speech();
+ 172   2                      }
+C51 COMPILER V9.51   TIMER2                                                                07/07/2014 17:12:36 PAGE 4   
+
+ 173   1      
+ 174   1                              
+ 175   1              // ²âÊÔÔÚÓĞµçÆ½µÄÇé¿öÏÂ£¬ÄÃµô48VµçÔ´£¬Ä£ÄâÓĞÈËÍµµçÆ¿µÄÇé¿ö£¬²¥±¨ÓïÒô
+ 176   1              if(ADC_check_result < 0x100)
+ 177   1                      {
+ 178   2              battery_stolen_speech();
+ 179   2                      }
+ 180   1              
+ 181   1              // ²âÊÔË®Òø¿ª¹Ø£¬µ¹µØ»òÕßÌ§Æğºó£¬²¥±¨ÓïÒô¡£
+ 182   1              if((raised_sensor_detect == 0)||(fell_sensor_detect == 0))
+ 183   1                      {
+ 184   2                      stolen_alarm_speech2();
+ 185   2                      }
+ 186   1              }
+ 187          
+ 188          /*-----------------------------------------------
+ 189                  ÓÃUART¶Ë¿Ú½ÓÊÕÊı¾İ£¬9600²¨ÌØÂÊ£¬ÊÕµ½ºó±íÊ¾
+ 190                  ÈÏÖ¤ÒÑÍ¨¹ı¡£
+ 191          -----------------------------------------------*/
+ 192          void uart_isr() interrupt 4 //ÖĞ¶Ï½ÓÊÕÊı¾İ
+ 193                  {
+ 194   1              if(RI)
+ 195   1                      {
+ 196   2                      RI=0;
+ 197   2      
+ 198   2                      // assign one byte to buffer[i] 
+ 199   2                      received_data_buffer[data_count] = SBUF;
+ 200   2                      
+ 201   2                      // judge whether buffer[0] is CmdHead
+ 202   2                      if((data_count == 0) && (received_data_buffer[0] == IDkey0))
+ 203   2                              {
+ 204   3                              data_count = 1;
+ 205   3                              }
+ 206   2                      else if((data_count == 1) && (received_data_buffer[1] == IDkey1))
+ 207   2                              {
+ 208   3                              data_count = 2;
+ 209   3                              }
+ 210   2                      else if((data_count == 2) && (received_data_buffer[2] == IDkey2))
+ 211   2                              {
+ 212   3                              data_count = 3;
+ 213   3                              }
+ 214   2                      else if((data_count == 3) && (received_data_buffer[3] == IDkey3))
+ 215   2                              {
+ 216   3                              data_count = 4;
+ 217   3                              }
+ 218   2                      else if((data_count == 4) && (received_data_buffer[4] == IDkey4))
+ 219   2                              {
+ 220   3                              data_count = 5;
+ 221   3                              }
+ 222   2                      else if((data_count == 5) && (received_data_buffer[5] == IDkey5))
+ 223   2                              {
+ 224   3                              data_count = 0; 
+ 225   3                              IDkey_flag = 1;
+ 226   3                              IDkey_count = 0;
+ 227   3                              disable_sensor();
+ 228   3                              }
+ 229   2                      else 
+ 230   2                              {
+ 231   3                              data_count = 0;
+ 232   3                              }
+ 233   2                      }
+ 234   1              }
+C51 COMPILER V9.51   TIMER2                                                                07/07/2014 17:12:36 PAGE 5   
+
+ 235          
+ 236          /*-----------------------------------------------------------------
+ 237                  ³õÊ¼»¯T0£¬ÔÚ³õÊ¼»¯ÁË´®¿ÚÖ®ºó
+ 238          -----------------------------------------------------------------*/
+ 239          void InitT0(const tByte Tick_ms_T0)
+ 240          {
+ 241   1              tLong Inc_T0;
+ 242   1              tWord timer0_16;
+ 243   1              
+ 244   1              //¼ÆËãTimer0µÄ¼Ä´æÆ÷Öµ
+ 245   1              Inc_T0 = (tLong)Tick_ms_T0 * (OSC_FREQ/1000) / (tLong)OSC_PER_INST;
+ 246   1              timer0_16 = (tWord) (65536UL - Inc_T0);
+ 247   1              timer0_8H = (tByte) (timer0_16 / 256);
+ 248   1              timer0_8L = (tByte) (timer0_16 % 256);
+ 249   1              TMOD = 0x21;
+ 250   1              TR0=1;
+ 251   1      }
+ 252          
+ 253          /*---------------------------------------------------------------------
+ 254                  sEos_Go_To_Sleep()
+ 255                  ½«MCU½øÈëĞİÃß×´Ì¬
+ 256          ----------------------------------------------------------------------*/
+ 257          void sEOS_Go_To_Sleep(void)
+ 258             {
+ 259   1         PCON |= 0x01;    // Enter idle mode (generic 8051 version)
+ 260   1         }
+ 261                  
+ 262          /*---------------------------------------------------
+ 263                  end of file
+ 264          ----------------------------------------------------*/
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    418    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     62       4
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =     30    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

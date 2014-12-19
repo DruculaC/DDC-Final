@@ -1,0 +1,13 @@
+"Main.obj",
+".\AD.obj",
+".\Battery.obj",
+".\communication.obj",
+".\Delay.obj",
+".\operation.obj",
+".\Other.obj",
+".\pwm.obj",
+".\Timer.obj",
+".\UART.obj",
+".\voice.obj" 
+TO "DDC-Z2 - Taili" 
+RAMSIZE(256) 

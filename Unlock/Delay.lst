@@ -1,0 +1,124 @@
+C51 COMPILER V9.51   DELAY                                                                 08/28/2014 15:47:45 PAGE 1   
+
+
+C51 COMPILER V9.51, COMPILATION OF MODULE DELAY
+OBJECT MODULE PLACED IN .\Delay.obj
+COMPILER INVOKED BY: D:\Program Files (x86)\keil\C51\BIN\C51.EXE ..\Library\Delay.c BROWSE INCDIR(..\Library) DEBUG OBJE
+                    -CTEXTEND PRINT(.\Delay.lst) OBJECT(.\Delay.obj)
+
+line level    source
+
+   1          /*---------------------------------------------------
+   2                  Delay.c (v1.00)
+   3                  
+   4                  Delay functions
+   5          ---------------------------------------------------*/   
+   6          
+   7          #include "main.h"
+   8          #include "port.h"
+   9          
+  10          #include "Delay.h"
+  11          
+  12          /*---------------------------------------------------
+  13                  Delay()
+  14                  延迟程序
+  15          --------------------------------------------------*/
+  16          
+  17          void Delay(tByte n)
+  18                  {
+  19   1              tWord x;
+  20   1              while(n--)
+  21   1                      {
+  22   2                      x=5000;
+  23   2                      while(x--);
+  24   2                      }
+  25   1              }
+  26          
+  27          /*---------------------------------------------------
+  28                  Custom_Delay()
+  29                  延迟程序
+  30          --------------------------------------------------*/
+  31          void Custom_Delay(tByte t, m)
+  32                  {
+  33   1              tWord i;
+  34   1              tByte j;
+  35   1              for(i = 0; i < t; i++)          
+  36   1              for(j = 0; j < m; j++);
+  37   1              }
+  38                  
+  39          /*--------------------------------------------------
+  40                  delay_ms()
+  41                  
+  42                  延迟约为1ms的子程序
+  43          ----------------------------------------------------*/
+  44          void delay_ms(tWord count)
+  45                  {
+  46   1              tWord i, j;
+  47   1              for(i=0;i<count;i++)
+  48   1                      {       
+  49   2                      for(j=0;j<100;j++);
+  50   2                      }
+  51   1              }
+  52          
+  53          /*--------------------------------------------------
+  54                  delay_us()
+C51 COMPILER V9.51   DELAY                                                                 08/28/2014 15:47:45 PAGE 2   
+
+  55                  
+  56                  延迟约为1us的子程序
+  57          ----------------------------------------------------*/
+  58          
+  59          void delay_us(tWord count1)
+  60                  {
+  61   1              tWord i;
+  62   1              tByte j;
+  63   1              for(i=0;i<count1;i++)
+  64   1                      {
+  65   2                      for(j=0;j<4;j++);
+  66   2                      }
+  67   1              }
+  68          
+  69          /*----------------------------------------------------
+  70                  Magnet_Delay()
+  71                  电磁铁的延迟程序，要在里面加入对过流的判断
+  72          -----------------------------------------------------*/
+  73          void Magnet_Delay(tWord x, y)
+  74                  {
+  75   1              tByte i;
+  76   1              tWord j;                                                                                                 
+             -       
+  77   1              for(i = 0; i < 50; i++)
+  78   1                      {
+  79   2                      for(j = 0; j< x; j++);
+  80   2                      }
+  81   1              for(i = 0; i < 50; i++)
+  82   1                      {
+  83   2                      // 检测过流保护是否跳转，如果为1，则表明电流过大
+  84   2                      if(magnet_overcurrent == 0)
+  85   2                              {
+  86   3                              for(j = 0; j< y; j++);
+  87   3                              }
+  88   2                      else
+  89   2                              {
+  90   3                              return;
+  91   3                              }
+  92   2                      }
+  93   1              }
+  94          
+  95          /*---------------------------------------------------
+  96                  end of file
+  97          ----------------------------------------------------*/
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    169    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

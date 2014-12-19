@@ -1,0 +1,12 @@
+".\AD.obj",
+".\Battery.obj",
+".\communication.obj",
+".\Delay.obj",
+".\operation.obj",
+".\Other.obj",
+".\UART.obj",
+".\voice.obj",
+".\Timer.obj",
+"Main.obj" 
+TO "DDC-Z2-WXT" 
+RAMSIZE(256) 

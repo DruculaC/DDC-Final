@@ -1,0 +1,12 @@
+"main.obj",
+".\AD.obj",
+".\Battery.obj",
+".\communication.obj",
+".\Delay.obj",
+".\operation.obj",
+".\Other.obj",
+".\pwm.obj",
+".\Timer.obj",
+".\UART.obj",
+".\voice.obj" 
+TO "S-1" 

@@ -1,0 +1,51 @@
+C51 COMPILER V9.51   T1                                                                    10/28/2013 09:11:27 PAGE 1   
+
+
+C51 COMPILER V9.51, COMPILATION OF MODULE T1
+OBJECT MODULE PLACED IN T1.OBJ
+COMPILER INVOKED BY: D:\Program Files (x86)\keil\C51\BIN\C51.EXE T1.c ROM(COMPACT) BROWSE DEBUG OBJECTEXTEND TABS(3)
+
+line level    source
+
+   1          /*---------------------------------------------------
+   2             Delay.c (v1.00)
+   3             
+   4             Delay functions
+   5          ---------------------------------------------------*/ 
+   6          
+   7          #include "main.h"
+   8          #include "port.h"
+   9          
+  10          #include "T1.h"
+  11          
+  12          /*--------------------------------------------------
+  13             InitT1()
+  14             
+  15             初始化定时器T1
+  16          ---------------------------------------------------*/
+  17          
+  18          void InitT1()
+  19          {
+  20   1         TMOD=0x11;//定时器1采用1方式
+  21   1         TH1=timer1H;
+  22   1         TL1=timer1L;
+  23   1         TR1=1;
+  24   1      }
+  25          
+  26          /*---------------------------------------------------
+  27             end of file
+  28          ----------------------------------------------------*/
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     12    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

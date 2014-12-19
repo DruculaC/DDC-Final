@@ -1,0 +1,12 @@
+"Main.obj",
+"Timer2.obj",
+".\voice.obj",
+".\UART.obj",
+".\pwm.obj",
+".\Other.obj",
+".\Delay.obj",
+".\operation.obj",
+".\communication.obj",
+".\Battery.obj",
+".\AD.obj" 
+TO "Product_Test2" 

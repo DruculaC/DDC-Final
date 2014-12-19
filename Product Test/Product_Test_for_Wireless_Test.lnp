@@ -1,0 +1,12 @@
+"Main_for_Wireless_Test.obj",
+".\voice.obj",
+".\UART.obj",
+".\pwm.obj",
+".\Other.obj",
+".\Delay.obj",
+".\operation.obj",
+".\communication.obj",
+".\Battery.obj",
+".\AD.obj",
+".\Timer.obj" 
+TO "Product_Test_for_Wireless_Test" 

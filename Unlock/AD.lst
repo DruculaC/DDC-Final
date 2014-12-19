@@ -1,0 +1,100 @@
+C51 COMPILER V9.51   AD                                                                    08/28/2014 15:47:45 PAGE 1   
+
+
+C51 COMPILER V9.51, COMPILATION OF MODULE AD
+OBJECT MODULE PLACED IN .\AD.obj
+COMPILER INVOKED BY: D:\Program Files (x86)\keil\C51\BIN\C51.EXE ..\Library\AD.c BROWSE INCDIR(..\Library) DEBUG OBJECTE
+                    -XTEND PRINT(.\AD.lst) OBJECT(.\AD.obj)
+
+line level    source
+
+   1          /*---------------------------------------------------
+   2                  ADC.c (v1.00)
+   3                  
+   4                  ADC function, for voltage conversion
+   5          ---------------------------------------------------*/   
+   6          
+   7          #include "main.h"
+   8          #include "port.h"
+   9          
+  10          #include "AD.h"
+  11          #include "Delay.h"
+  12          
+  13          /*----------------------------------------------------
+  14                  GetADCResult(tByte ch)
+  15                  assign the channel, to get the voltage
+  16          ----------------------------------------------------*/
+  17          
+  18          tWord GetADCResult(tByte ch)
+  19                  {
+  20   1              tByte DataL = 0;
+  21   1              tWord DataH = 0;
+  22   1              // channel 5 is MIC voltage detection
+  23   1              if(ch == 5)
+  24   1                      {       
+  25   2                      // Set ADC0 (P0.5 default) is input only mode
+  26   2                      P0DIDS |= 0x20; 
+  27   2            // choose channel 5
+  28   2                      AADR0 = 0;      
+  29   2                      AADR1 = 0;
+  30   2                      AADR2 = 1;
+  31   2                                                                                
+  32   2                 ADCCON1 |= 0x80;                                          
+  33   2                      
+  34   2                      ADCI = 0;                                           
+  35   2              ADCS = 1;  
+  36   2                      
+  37   2                      DataL = ADCCON0;
+  38   2                      DataL = DataL>>6; 
+  39   2      
+  40   2                      DataH = ADCH;
+  41   2                      DataH = (DataH<<2) + DataL;
+  42   2      
+  43   2                      return DataH;
+  44   2                      }
+  45   1              // channel 6 is battery voltage detection
+  46   1              else if(ch == 6) 
+  47   1                      {
+  48   2                      // Set ADC0 (P0.6 default) is input only mode
+  49   2                      P0DIDS |= 0x40; 
+  50   2      
+  51   2                      // choose channel 6.
+  52   2                      AADR0 = 1;
+  53   2                      AADR1 = 0;
+  54   2                      AADR2 = 1;
+C51 COMPILER V9.51   AD                                                                    08/28/2014 15:47:45 PAGE 2   
+
+  55   2                                                                                
+  56   2                 ADCCON1 |= 0x80;                                      
+  57   2                      
+  58   2                      ADCI = 0;                                       
+  59   2              ADCS = 1;  
+  60   2                      
+  61   2                      DataL = ADCCON0;
+  62   2                      DataL = DataL>>6; 
+  63   2      
+  64   2                      DataH = ADCH;
+  65   2                      DataH = (DataH<<2) + DataL;
+  66   2      
+  67   2                      return DataH;
+  68   2                      }
+  69   1              }
+  70          
+  71          /*---------------------------------------------------
+  72                  end of file
+  73          ----------------------------------------------------*/ 
+*** WARNING C291 IN LINE 69 OF ..\Library\AD.c: not every exit path returns a value
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    116    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  1 WARNING(S),  0 ERROR(S)

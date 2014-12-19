@@ -1,0 +1,368 @@
+C51 COMPILER V9.51   COMMUNICATION                                                         12/14/2014 08:44:18 PAGE 1   
+
+
+C51 COMPILER V9.51, COMPILATION OF MODULE COMMUNICATION
+OBJECT MODULE PLACED IN .\communication.obj
+COMPILER INVOKED BY: D:\Program Files (x86)\keil\C51\BIN\C51.EXE ..\Library\communication.c BROWSE INCDIR(..\Library) DE
+                    -BUG OBJECTEXTEND PRINT(.\communication.lst) OBJECT(.\communication.obj)
+
+line level    source
+
+   1          /*---------------------------------------------------
+   2                  communication.c (v1.00)
+   3                  
+   4                  通信程序
+   5          ---------------------------------------------------*/   
+   6          
+   7          #include "main.h"
+   8          #include "port.h"
+   9          
+  10          #include "communication.h"
+  11          #include "Delay.h"
+  12          #include "uart.h"
+  13          
+  14          /*------ private variable --------------------------*/
+  15          tByte myTxRxData[7] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+  16          tByte IDkey5 = IDkey0^IDkey1^IDkey2^IDkey3^IDkey4;
+  17          
+  18          /*------- Public variable declarations --------------------------*/
+  19          extern tByte receive_LV_count;          
+  20          extern bit receive_wire_flag;           
+  21          extern tByte one_receive_byte;          
+  22          extern tByte one_receive_byte_count;                    
+  23          extern tByte receive_HV_count;          
+  24          extern tByte data_count;                                
+  25          extern tByte received_data_buffer[7];           
+  26          extern bit receive_data_finished_flag;          
+  27          
+  28          /*----------------------------------------------------
+  29                  initsignal()
+  30                  
+  31                  初始化信号程序，接收机在接接收信号的时候，需要有
+  32                  一段代码来使接收机打开，而这一段程序有可能无法识别
+  33                  出来，而是相当于废代码，只占用通信时间。
+  34          ----------------------------------------------------*/
+  35          void initsignal()
+  36                  {
+  37   1              tByte k,k1;
+  38   1              tByte mystartbuffer = 0xaa;
+  39   1              for(k1 = 0; k1 < 3; k1++)
+  40   1                      {
+  41   2                      for(k=0;k<8;k++)
+  42   2                              {
+  43   3                              if((mystartbuffer&0x80) == 0x80)//为1
+  44   3                                      {
+  45   4                                      P10=0;
+  46   4                                      Custom_Delay(23, 21);
+  47   4                                      }
+  48   3                              else
+  49   3                                      {
+  50   4                                      P10=0;
+  51   4                                      Custom_Delay(23, 21);
+  52   4                                      }
+  53   3                              P10=1;
+  54   3                              mystartbuffer<<=1;
+C51 COMPILER V9.51   COMMUNICATION                                                         12/14/2014 08:44:18 PAGE 2   
+
+  55   3                              Custom_Delay(43, 21);
+  56   3                              }
+  57   2                      mystartbuffer=0xaa;
+  58   2                      Custom_Delay(23, 21);
+  59   2                      }
+  60   1              P10=1;
+  61   1              }
+  62          
+  63          /*--------------------------------------------------
+  64                  Send_Data()
+  65                  将数据发送出去
+  66          --------------------------------------------------*/
+  67          void Send_Data(tByte x)
+  68                  {
+  69   1              tByte i,n;
+  70   1              for(i=0;i<3;i++)
+  71   1                      {
+  72   2                      for(n=0;n<8;n++)
+  73   2                              {
+  74   3                              if((myTxRxData[i]&0x80)==0x80)
+  75   3                                      {
+  76   4                                      P10=0;
+  77   4                                      Custom_Delay(36, x);
+  78   4                                      }
+  79   3                              else
+  80   3                                      {
+  81   4                                      P10=0;
+  82   4                                      Custom_Delay(23, x);
+  83   4                                      }
+  84   3                              P10=1;
+  85   3                              myTxRxData[i]<<=1;
+  86   3                              Custom_Delay(15, x);
+  87   3                              }
+  88   2                      }       
+  89   1              }
+  90          
+  91          /*--------------------------------------------------
+  92                  ComMode_Data()
+  93                  
+  94                  主机接收到编码1信号后，会反馈一个编码1信号给附机
+  95                  以表示主机在附机附近。
+  96          ---------------------------------------------------*/
+  97          void ComMode_Data(tByte ComMode, x)     
+  98                  {
+  99   1              receiver_EN = 1;
+ 100   1              Delay(20);
+ 101   1              transmiter_EN = 0;
+ 102   1              myTxRxData[0] = CmdHead;
+ 103   1              myTxRxData[1] = MyAddress;
+ 104   1              myTxRxData[2] = ComMode;
+ 105   1      
+ 106   1              initsignal();
+ 107   1          Send_Data(x);
+ 108   1              
+ 109   1              transmiter_EN = 1;
+ 110   1              receiver_EN = 0;
+ 111   1              }
+ 112          
+ 113          /*--------------------------------------------------
+ 114                  ComMode_Data_WX()
+ 115                  
+ 116                  主机接收到编码1信号后，会反馈一个编码1信号给附机
+C51 COMPILER V9.51   COMMUNICATION                                                         12/14/2014 08:44:18 PAGE 3   
+
+ 117                  以表示主机在附机附近。
+ 118          ---------------------------------------------------*/
+ 119          void ComMode_Data_WX(tByte ComMode, x)  
+ 120                  {
+ 121   1              receiver_EN = 1;
+ 122   1              Delay(20);
+ 123   1              transmiter_EN = 0;
+ 124   1              myTxRxData[0] = CmdHead;
+ 125   1              myTxRxData[1] = MyAddress;
+ 126   1              myTxRxData[2] = ComMode;
+ 127   1      
+ 128   1              initsignal();
+ 129   1          Send_Data(x);
+ 130   1              
+ 131   1              transmiter_EN = 0;
+ 132   1              receiver_EN = 0;
+ 133   1              TXD = 0;
+ 134   1              }
+ 135          
+ 136          /*------------------------------------------------------------------
+ 137                  UART发送数据
+ 138          ------------------------------------------------------------------*/
+ 139          void UART_Send_Data(void)
+ 140                  {
+ 141   1              receiver_EN = 1;
+ 142   1              Delay(20);
+ 143   1              transmiter_EN = 0;
+ 144   1              myTxRxData[0] = IDkey0;
+ 145   1              myTxRxData[1] = IDkey1;
+ 146   1              myTxRxData[2] = IDkey2;
+ 147   1              myTxRxData[3] = IDkey3;
+ 148   1              myTxRxData[4] = IDkey4;
+ 149   1              myTxRxData[5] = IDkey5;
+ 150   1              initsignal();
+ 151   1              SendNByte(myTxRxData, 6);
+ 152   1              
+ 153   1              transmiter_EN = 1;
+ 154   1              receiver_EN = 0;
+ 155   1              
+ 156   1              }
+ 157          
+ 158          /*-----------------------------------------------------------------------------
+ 159                  receive_byte()
+ 160                  receive a byte program
+ 161          -----------------------------------------------------------------------------*/
+ 162          void receive_byte(void)
+ 163                  {
+ 164   1              // P11 constantly HV, if detected a LV, judge it.
+ 165   1              if(P11 == 0)
+ 166   1                      {
+ 167   2                      // count the LV time, if more than 12ms, reset it.
+ 168   2                      if(++receive_LV_count == 120)
+ 169   2                              {
+ 170   3                              receive_LV_count = 0;
+ 171   3                              }
+ 172   2                      receive_wire_flag = 0;
+ 173   2                      }
+ 174   1              // if P11 return to HV
+ 175   1              else
+ 176   1                      {
+ 177   2                      // and already have LV before, so we think it maybe a bit signal
+ 178   2                      if(receive_wire_flag == 0)
+C51 COMPILER V9.51   COMMUNICATION                                                         12/14/2014 08:44:18 PAGE 4   
+
+ 179   2                              {
+ 180   3                              // set the flag, to judge a bit only one time
+ 181   3                              receive_wire_flag = 1;
+ 182   3      
+ 183   3                              // judge the LV time, if 3.5ms < time < 8ms, we think it is a "0". time<3.5ms means a noise.
+ 184   3                              if((receive_LV_count > 35)&&(receive_LV_count <= 80))   
+ 185   3                                      {
+ 186   4                                      // save "0" to one byte
+ 187   4                                      one_receive_byte <<= 1;
+ 188   4                                      one_receive_byte &= 0xfe;
+ 189   4                                      one_receive_byte_count++;
+ 190   4                                      receive_HV_count = 0;
+ 191   4                                      }
+ 192   3                              // time > 8ms, means a "1"
+ 193   3                              else if((receive_LV_count > 80))
+ 194   3                                      {
+ 195   4                                      // save "1" to one byte
+ 196   4                                      one_receive_byte <<= 1;
+ 197   4                                      one_receive_byte |= 0x01;
+ 198   4                                      one_receive_byte_count++;
+ 199   4                                      receive_HV_count = 0;
+ 200   4                                      }
+ 201   3                              
+ 202   3                              else
+ 203   3                                      {
+ 204   4                                      // increase the count for HV
+ 205   4                                      receive_HV_count++;     
+ 206   4                                      }
+ 207   3               // reset LV count
+ 208   3                              receive_LV_count = 0;
+ 209   3                              }
+ 210   2                      else
+ 211   2                              {
+ 212   3                              // judge whether HV count > 6ms, if yes, means a restart
+ 213   3                              if(++receive_HV_count >= 60)
+ 214   3                                      {
+ 215   4                                      one_receive_byte_count = 0;
+ 216   4                                      receive_wire_flag = 1;
+ 217   4                                      data_count = 0;
+ 218   4                                      }               
+ 219   3                              }
+ 220   2                      }
+ 221   1              }
+ 222          
+ 223          /*-----------------------------------------------------------------------------
+ 224                  receive_word()
+ 225                  receive a word program
+ 226          -----------------------------------------------------------------------------*/
+ 227          void receive_word(void)
+ 228                  {
+ 229   1              // one byte have 8 bit, once receive a bit, the count increase, once it is 8, it means a byte received.
+ 230   1              if(one_receive_byte_count == 8)
+ 231   1                      {
+ 232   2                      one_receive_byte_count = 0;
+ 233   2                      // assign one byte to buffer[i] 
+ 234   2                      received_data_buffer[data_count] = one_receive_byte;
+ 235   2                      
+ 236   2                      // judge whether buffer[0] is CmdHead
+ 237   2                      if((data_count == 0) && (received_data_buffer[0] == CmdHead))
+ 238   2                              {
+ 239   3                              data_count = 1;
+ 240   3                              }
+C51 COMPILER V9.51   COMMUNICATION                                                         12/14/2014 08:44:18 PAGE 5   
+
+ 241   2                      // judge whether buffer[1] is MyAddress
+ 242   2                      else if((data_count == 1) && (received_data_buffer[1] == MyAddress))
+ 243   2                              {
+ 244   3                              data_count = 2;
+ 245   3                              }
+ 246   2                      else if(data_count == 2)
+ 247   2                              {
+ 248   3                              receive_data_finished_flag = 1;
+ 249   3                              data_count = 0;
+ 250   3                              }
+ 251   2                      else 
+ 252   2                              {
+ 253   3                              data_count = 0;
+ 254   3                              }
+ 255   2                      }
+ 256   1              }
+ 257          
+ 258          /*--------------------------------------------------
+ 259                  send_code_to_lock()
+ 260                  
+ 261                  将密码发送给锁体。
+ 262          ---------------------------------------------------*/
+ 263          void send_code_to_lock(tByte x, y)      
+ 264          {
+ 265   1              unsigned char i,n;
+ 266   1              myTxRxData[0]=CmdHead;
+ 267   1              myTxRxData[1]=MyAddress;
+ 268   1              myTxRxData[2]=x;
+ 269   1      /*      myTxRxData[3]=0x00;
+ 270   1              myTxRxData[4]=0x00;
+ 271   1              myTxRxData[5]=0x00;
+ 272   1              myTxRxData[6]=0x00;
+ 273   1      */
+ 274   1              for(i=0;i<3;i++)
+ 275   1              {
+ 276   2                      for(n=0;n<8;n++)
+ 277   2                      {
+ 278   3                              if((myTxRxData[i]&0x80) == 0x80)//为1
+ 279   3                              {
+ 280   4                                      MagentControl_1 = 0;
+ 281   4                                      Custom_Delay(36, y);
+ 282   4                              }
+ 283   3                              else//为0的情况
+ 284   3                              {
+ 285   4                                      MagentControl_1 = 0;
+ 286   4                                      Custom_Delay(23, y);
+ 287   4                              }
+ 288   3                              MagentControl_1 = 1;            //常态为高电平
+ 289   3                              myTxRxData[i] <<= 1;
+ 290   3                              Custom_Delay(15, y);
+ 291   3                      }
+ 292   2              }
+ 293   1      }
+ 294          
+ 295          /*--------------------------------------------------
+ 296                  send_code_to_lock_Taili()
+ 297                  
+ 298                  将密码发送给锁体。
+ 299          ---------------------------------------------------*/
+ 300          void send_code_to_lock_Taili(tByte x, y)        
+ 301          {
+ 302   1              unsigned char i,n;
+C51 COMPILER V9.51   COMMUNICATION                                                         12/14/2014 08:44:18 PAGE 6   
+
+ 303   1              myTxRxData[0]=CmdHead;
+ 304   1              myTxRxData[1]=MyAddress;
+ 305   1              myTxRxData[2]=x;
+ 306   1      /*      myTxRxData[3]=0x00;
+ 307   1              myTxRxData[4]=0x00;
+ 308   1              myTxRxData[5]=0x00;
+ 309   1              myTxRxData[6]=0x00;
+ 310   1      */
+ 311   1              for(i=0;i<3;i++)
+ 312   1              {
+ 313   2                      for(n=0;n<8;n++)
+ 314   2                      {
+ 315   3                              if((myTxRxData[i]&0x80) == 0x80)//为1
+ 316   3                              {
+ 317   4                                      lock_code = 0;
+ 318   4                                      Custom_Delay(36, y);
+ 319   4                              }
+ 320   3                              else//为0的情况
+ 321   3                              {
+ 322   4                                      lock_code = 0;
+ 323   4                                      Custom_Delay(23, y);
+ 324   4                              }
+ 325   3                              lock_code = 1;          //常态为高电平
+ 326   3                              myTxRxData[i] <<= 1;
+ 327   3                              Custom_Delay(15, y);
+ 328   3                      }
+ 329   2              }
+ 330   1      }
+ 331                  
+ 332          /*---------------------------------------------------
+ 333                  end of file
+ 334          ----------------------------------------------------*/
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    605    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      8      20
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

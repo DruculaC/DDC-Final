@@ -1,0 +1,116 @@
+C51 COMPILER V9.51   OPERATION                                                             08/16/2014 14:14:28 PAGE 1   
+
+
+C51 COMPILER V9.51, COMPILATION OF MODULE OPERATION
+OBJECT MODULE PLACED IN .\operation.obj
+COMPILER INVOKED BY: D:\Program Files (x86)\keil\C51\BIN\C51.EXE ..\Library\operation.c BROWSE INCDIR(..\Library) DEBUG 
+                    -OBJECTEXTEND PRINT(.\operation.lst) OBJECT(.\operation.obj)
+
+line level    source
+
+   1          /*-------------------------------------------------------------
+   2                  operation.c
+   3                  各类操作程序
+   4          --------------------------------------------------------------*/
+   5          
+   6          #include "main.h"
+   7          #include "port.h"
+   8          
+   9          #include "operation.h"
+  10          #include "other.h"
+  11          #include "voice.h"
+  12          #include "battery.h"
+  13          #include "delay.h"
+  14          
+  15          /*------ private variable --------------------------*/
+  16          bit enable_sensor_delayEN = 0;          // 延迟使能传感器的使能，不能即时使能传感器，需要过一段时间             
+  17          
+  18          /*------- Public variable declarations --------------------------*/
+  19          extern bit position_sensor_EN;          
+  20          extern bit fell_flag;                                           
+  21          extern bit raised_flag;                         
+  22          extern tByte sensor_trigger_count;      
+  23          extern tByte sensor_1ststage_count;     
+  24          extern bit raised_fell_once_flag;                       
+  25          extern bit raised_fell_flag;                                    
+  26          extern bit host_stolen_alarm1_EN;     
+  27          extern bit host_stolen_alarm2_EN;      
+  28          extern tByte host_stolen_alarm1_count;          
+  29          extern tByte host_stolen_alarm2_count;          
+  30          extern bit stolen_alarm_flag;                                   
+  31          extern tWord sensor_3rdstage_time;                      
+  32          extern tByte sensor_3rdstage_effcount;          
+  33          extern tByte sensor_3rdstage_count;                     
+  34          extern tWord sensor_3rdstage_interval;          
+  35          extern tWord sensor_2ndstage_time;              
+  36          extern tByte sensor_2ndstage_count;             
+  37          extern tByte nearby_away_interval;              
+  38          extern tWord ADC_check_result;          
+  39          extern tByte wire_broken_count;         
+  40          extern bit wire_broken_flag;                    
+  41          extern bit battery_stolen_EN;                   
+  42          extern tByte battery_stolen_count;
+  43          extern bit sensor_3rdalarm_flag;
+  44          extern tByte enable_sensor_delay_count;         
+  45          
+  46          /*-----------------------------------------
+  47                  slave_away_operation()
+  48                  
+  49                  operation for slave is away
+  50          ------------------------------------------*/
+  51          void slave_away_operation(void)
+  52                  {
+  53   1              // turn off the magnet 
+  54   1              magnet_ACW();
+C51 COMPILER V9.51   OPERATION                                                             08/16/2014 14:14:28 PAGE 2   
+
+  55   1              
+  56   1              // speech for slave away
+  57   1              slave_away_speech();    
+  58   1              
+  59   1              // enable_sensor();     
+  60   1              enable_sensor_delayEN = 1;
+  61   1              enable_sensor_delay_count = 0;
+  62   1      
+  63   1              // delay time, avoid sensor trigger on.
+  64   1              Delay(20);
+  65   1              }
+  66          
+  67          /*----------------------------------------------------------------------
+  68                          slave_nearby_operation()
+  69                          operation for slave is nearby
+  70          ----------------------------------------------------------------------*/
+  71          void slave_nearby_operation(void)
+  72                  {
+  73   1      
+  74   1              // turn on the magnet
+  75   1              magnet_CW();
+  76   1      
+  77   1              // speech for slave nearby
+  78   1              slave_nearby_speech();
+  79   1              // handle with battery status 
+  80   1              verifybattery(ADC_check_result);                                        
+  81   1              // rotate on speech
+  82   1              key_rotate_on_speech();
+  83   1              nearby_away_interval = 0;
+  84   1              
+  85   1              disable_sensor();
+  86   1              }
+  87                  
+  88          /*---------------------------------------------------
+  89                  end of file
+  90          ----------------------------------------------------*/
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     39    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =      1    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

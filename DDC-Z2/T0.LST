@@ -1,0 +1,55 @@
+C51 COMPILER V9.51   T0                                                                    11/01/2013 13:31:52 PAGE 1   
+
+
+C51 COMPILER V9.51, COMPILATION OF MODULE T0
+OBJECT MODULE PLACED IN T0.OBJ
+COMPILER INVOKED BY: D:\Program Files (x86)\keil\C51\BIN\C51.EXE T0.c BROWSE DEBUG OBJECTEXTEND TABS(3)
+
+line level    source
+
+   1          /*---------------------------------------------------
+   2             Delay.c (v1.00)
+   3             
+   4             Delay functions
+   5          ---------------------------------------------------*/ 
+   6          
+   7          #include "main.h"
+   8          #include "port.h"
+   9          
+  10          #include"T0.h"
+  11          
+  12          /*--------------------------------------------------
+  13             InitT0()
+  14             
+  15             初始化定时器T0
+  16          ---------------------------------------------------*/
+  17          
+  18          void InitT0()
+  19          {
+  20   1         TMOD=0x21;//定时器0采用1方式
+  21   1         TH0=timer0H;
+  22   1         TL0=timer0L;
+  23   1         TR0=1;
+  24   1      }
+  25          
+  26          /*---------------------------------------------------
+  27             end of file
+  28          ----------------------------------------------------*/
+  29          
+  30          
+  31          
+  32          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     12    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

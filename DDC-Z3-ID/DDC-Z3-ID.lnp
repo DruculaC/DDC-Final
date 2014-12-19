@@ -1,0 +1,11 @@
+"Main.obj",
+".\AD.obj",
+".\Battery.obj",
+".\communication.obj",
+".\Delay.obj",
+".\operation.obj",
+".\Other.obj",
+".\UART.obj",
+".\voice.obj",
+".\Timer.obj" 
+TO "DDC-Z3-ID" 

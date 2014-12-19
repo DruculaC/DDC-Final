@@ -1,0 +1,666 @@
+C51 COMPILER V9.51   COMMUNICATION                                                         08/16/2014 14:14:28 PAGE 1   
+
+
+C51 COMPILER V9.51, COMPILATION OF MODULE COMMUNICATION
+OBJECT MODULE PLACED IN .\communication.obj
+COMPILER INVOKED BY: D:\Program Files (x86)\keil\C51\BIN\C51.EXE ..\Library\communication.c BROWSE INCDIR(..\Library) DE
+                    -BUG OBJECTEXTEND PRINT(.\communication.lst) OBJECT(.\communication.obj)
+
+line level    source
+
+   1          /*---------------------------------------------------
+   2                  communication.c (v1.00)
+   3                  
+   4                  通信程序
+   5          ---------------------------------------------------*/   
+   6          
+   7          #include "main.h"
+   8          #include "port.h"
+   9          
+  10          #include "communication.h"
+  11          #include "Delay.h"
+  12          
+  13          /*------ private variable --------------------------*/
+  14          tByte myTxRxData[7]={0x00,0x00,0x00,0x00,0x00,0x00,0x00};
+  15          
+  16          /*------- Public variable declarations --------------------------*/
+  17          extern tByte receive_LV_count;          
+  18          extern bit receive_wire_flag;           
+  19          extern tByte one_receive_byte;          
+  20          extern tByte one_receive_byte_count;                    
+  21          extern tByte receive_HV_count;          
+  22          extern tByte data_count;                                
+  23          extern tByte received_data_buffer[7];           
+  24          extern bit receive_data_finished_flag;          
+  25          
+  26          /*----------------------------------------------------
+  27                  initsignal()
+  28                  
+  29                  初始化信号程序，接收机在接接收信号的时候，需要有
+  30                  一段代码来使接收机打开，而这一段程序有可能无法识别
+  31                  出来，而是相当于废代码，只占用通信时间。
+  32          ----------------------------------------------------*/
+  33          void initsignal()
+  34                  {
+  35   1              tByte k,k1;
+  36   1              tByte mystartbuffer = 0xaa;
+  37   1              for(k1 = 0; k1 < 3; k1++)
+  38   1                      {
+  39   2                      for(k=0;k<8;k++)
+  40   2                              {
+  41   3                              if((mystartbuffer&0x80) == 0x80)//为1
+  42   3                                      {
+  43   4                                      P10=0;
+  44   4                                      Delay3(80);
+  45   4                                      }
+  46   3                              else
+  47   3                                      {
+  48   4                                      P10=0;
+  49   4                                      Delay3(80);
+  50   4                                      }
+  51   3                              P10=1;
+  52   3                              mystartbuffer<<=1;
+  53   3                              Delay3(150);
+  54   3                              }
+C51 COMPILER V9.51   COMMUNICATION                                                         08/16/2014 14:14:28 PAGE 2   
+
+  55   2                      mystartbuffer=0xaa;
+  56   2                      Delay3(80);
+  57   2                      }
+  58   1              P10=1;
+  59   1              }
+  60          
+  61          /*----------------------------------------------------
+  62                  initsignal2()
+  63                  
+  64                  初始化信号程序，接收机在接接收信号的时候，需要有
+  65                  一段代码来使接收机打开，而这一段程序有可能无法识别
+  66                  出来，而是相当于废代码，只占用通信时间。
+  67          ----------------------------------------------------*/
+  68          
+  69          void initsignal2()
+  70                  {
+  71   1              tByte k,k1;
+  72   1              tByte mystartbuffer = 0xaa;
+  73   1              for(k1=0;k1<3;k1++)
+  74   1                      {
+  75   2                      for(k=0;k<8;k++)
+  76   2                              {
+  77   3                              if((mystartbuffer&0x80)==0x80)
+  78   3                                      {
+  79   4                                      P10=0;
+  80   4                                      Delay3(80);
+  81   4                                      }
+  82   3                              else
+  83   3                                      {
+  84   4                                      P10=0;
+  85   4                                      Delay3(80);
+  86   4                                      }
+  87   3                              P10=1;
+  88   3                              mystartbuffer<<=1;
+  89   3                              Delay3(150);
+  90   3                              }
+  91   2                      mystartbuffer=0xaa;
+  92   2                      Delay3(80);
+  93   2                      }
+  94   1              P10=1;
+  95   1              }
+  96          
+  97          /*----------------------------------------------------
+  98                  initsignal3()
+  99                  
+ 100                  初始化信号程序，接收机在接接收信号的时候，需要有
+ 101                  一段代码来使接收机打开，而这一段程序有可能无法识别
+ 102                  出来，而是相当于废代码，只占用通信时间。
+ 103          ----------------------------------------------------*/
+ 104          
+ 105          void initsignal3()
+ 106                  {
+ 107   1              tByte k,k1;
+ 108   1              tByte mystartbuffer = 0xaa;
+ 109   1              for(k1=0;k1<3;k1++)
+ 110   1                      {
+ 111   2                      for(k=0;k<8;k++)
+ 112   2                              {
+ 113   3                              if((mystartbuffer&0x80)==0x80)
+ 114   3                                      {
+ 115   4                                      P10=0;
+ 116   4                                      Delay3(80);
+C51 COMPILER V9.51   COMMUNICATION                                                         08/16/2014 14:14:28 PAGE 3   
+
+ 117   4                                      }
+ 118   3                              else
+ 119   3                                      {
+ 120   4                                      P10=0;
+ 121   4                                      Delay3(80);
+ 122   4                                      }
+ 123   3                              P10=1;
+ 124   3                              mystartbuffer<<=1;
+ 125   3                              Delay3(150);
+ 126   3                              }
+ 127   2                      mystartbuffer=0xaa;
+ 128   2                      Delay3(80);
+ 129   2                      }
+ 130   1              P10=1;
+ 131   1              }
+ 132          
+ 133          /*--------------------------------------------------
+ 134                  ComMode_1_Data()
+ 135                  
+ 136                  主机接收到编码1信号后，会反馈一个编码1信号给附机
+ 137                  以表示主机在附机附近。
+ 138          ---------------------------------------------------*/
+ 139          
+ 140          void ComMode_1_Data()   
+ 141                  {
+ 142   1              tByte i,n;
+ 143   1              receiver_EN = 1;
+ 144   1              transmiter_power = 1;                           
+ 145   1              transmiter_EN = 0;
+ 146   1              myTxRxData[0]=CmdHead;
+ 147   1              myTxRxData[1]=MyAddress;
+ 148   1              myTxRxData[2]=ComMode_1;
+ 149   1      
+ 150   1              initsignal2();
+ 151   1      
+ 152   1              for(i=0;i<3;i++)
+ 153   1                      {
+ 154   2                      for(n=0;n<8;n++)
+ 155   2                              {
+ 156   3                              if((myTxRxData[i]&0x80)==0x80)
+ 157   3                                      {
+ 158   4                                      P10=0;
+ 159   4                                      Delay4(120);
+ 160   4                                      }
+ 161   3                              else
+ 162   3                                      {
+ 163   4                                      P10=0;
+ 164   4                                      Delay4(80);
+ 165   4                                      }
+ 166   3                              P10=1;
+ 167   3                              myTxRxData[i]<<=1;
+ 168   3                              Delay4(50);
+ 169   3                              }
+ 170   2                      }
+ 171   1              transmiter_EN = 1;
+ 172   1              receiver_EN = 0;
+ 173   1              transmiter_power = 1;                           
+ 174   1              }
+ 175          
+ 176          /*--------------------------------------------------
+ 177                  ComMode_1_Data_F2()
+ 178                  
+C51 COMPILER V9.51   COMMUNICATION                                                         08/16/2014 14:14:28 PAGE 4   
+
+ 179                  用于F2，无线认证用，发送编码1，给主机进行认证
+ 180          ---------------------------------------------------*/
+ 181          
+ 182          void ComMode_1_Data_F2()        
+ 183                  {
+ 184   1              tByte i,n;
+ 185   1              transmiter_EN = 0;
+ 186   1              myTxRxData[0]=CmdHead;
+ 187   1              myTxRxData[1]=MyAddress;
+ 188   1              myTxRxData[2]=ComMode_1;
+ 189   1              
+ 190   1              initsignal2();
+ 191   1      
+ 192   1              for(i=0;i<3;i++)
+ 193   1                      {
+ 194   2                      for(n=0;n<8;n++)
+ 195   2                              {
+ 196   3                              if((myTxRxData[i]&0x80)==0x80)
+ 197   3                                      {
+ 198   4                                      P10=0;
+ 199   4                                      Delay4(120);
+ 200   4                                      }
+ 201   3                              else
+ 202   3                                      {
+ 203   4                                      P10=0;
+ 204   4                                      Delay4(80);
+ 205   4                                      }
+ 206   3                              P10=1;
+ 207   3                              myTxRxData[i]<<=1;
+ 208   3                              Delay4(50);
+ 209   3                              }
+ 210   2                      }
+ 211   1              transmiter_EN = 0;
+ 212   1              }
+ 213          
+ 214          /*--------------------------------------------------
+ 215                  ComMode_2_Data()
+ 216                  when battery is stolen, transmit this code to slave. 
+ 217          ---------------------------------------------------*/
+ 218          
+ 219          void ComMode_2_Data()   
+ 220          {
+ 221   1              unsigned char i,n;
+ 222   1              receiver_EN = 1;
+ 223   1              transmiter_power = 0;                           
+ 224   1              transmiter_EN = 0;
+ 225   1              myTxRxData[0]=CmdHead;
+ 226   1              myTxRxData[1]=MyAddress;
+ 227   1              myTxRxData[2]=ComMode_2;
+ 228   1      /*      myTxRxData[3]=0x00;
+ 229   1              myTxRxData[4]=0x00;
+ 230   1              myTxRxData[5]=0x00;
+ 231   1              myTxRxData[6]=0x00;
+ 232   1      */
+ 233   1              initsignal2();
+ 234   1      
+ 235   1              for(i=0;i<3;i++)
+ 236   1              {
+ 237   2                      for(n=0;n<8;n++)
+ 238   2                      {
+ 239   3                              if((myTxRxData[i]&0x80)==0x80)//为1
+ 240   3                              {
+C51 COMPILER V9.51   COMMUNICATION                                                         08/16/2014 14:14:28 PAGE 5   
+
+ 241   4                                      P10=0;
+ 242   4                                      Delay4(120);//延时4.5ms以上，由于定时器占用问题，只能用这种延时来实现
+ 243   4                              }
+ 244   3                              else//为0的情况
+ 245   3                              {
+ 246   4                                      P10=0;
+ 247   4                                      Delay4(80);//延时2ms，由于定时器占用问题，只能用这种延时来实现
+ 248   4                              }
+ 249   3                              P10=1;//常态为高电平
+ 250   3                              myTxRxData[i]<<=1;
+ 251   3                              Delay4(50);//延时要大于2ms
+ 252   3                      }
+ 253   2              }
+ 254   1              transmiter_EN = 1;
+ 255   1              transmiter_power = 1;                           
+ 256   1              receiver_EN = 0;
+ 257   1      }
+ 258          
+ 259          /*----------------------------------------------------------
+ 260                  ComMode_3_Data()
+ 261                  
+ 262                  被盗报警信号，让附机语音提示“电动车被盗“
+ 263          ----------------------------------------------------------*/
+ 264          
+ 265          void ComMode_3_Data()
+ 266          {
+ 267   1      //      unsigned int j;
+ 268   1              unsigned char i,n;
+ 269   1              receiver_EN = 1;
+ 270   1              transmiter_power = 0;
+ 271   1              transmiter_EN = 0;
+ 272   1              myTxRxData[0]=CmdHead;
+ 273   1              myTxRxData[1]=MyAddress;
+ 274   1              myTxRxData[2]=ComMode_3;
+ 275   1      /*      myTxRxData[3]=0x00;
+ 276   1              myTxRxData[4]=0x00;
+ 277   1              myTxRxData[5]=0x00;
+ 278   1              myTxRxData[6]=0x00;
+ 279   1      */
+ 280   1              initsignal();
+ 281   1      
+ 282   1              for(i=0;i<3;i++)
+ 283   1              {
+ 284   2                      for(n=0;n<8;n++)
+ 285   2                      {
+ 286   3                              if((myTxRxData[i]&0x80)==0x80)//为1
+ 287   3                              {
+ 288   4                                      P10=0;
+ 289   4                                      Delay4(120);//延时4.5ms以上，由于定时器占用问题，只能用这种延时来实现
+ 290   4                              }
+ 291   3                              else//为0的情况
+ 292   3                              {
+ 293   4                                      P10=0;
+ 294   4                                      Delay4(80);//延时2ms，由于定时器占用问题，只能用这种延时来实现
+ 295   4                              }
+ 296   3                              P10=1;//常态为高电平
+ 297   3                              myTxRxData[i]<<=1;
+ 298   3                              Delay4(50);//延时要大于2ms
+ 299   3                      }
+ 300   2              }
+ 301   1              transmiter_EN = 1;
+ 302   1              transmiter_power = 1;
+C51 COMPILER V9.51   COMMUNICATION                                                         08/16/2014 14:14:28 PAGE 6   
+
+ 303   1              receiver_EN = 0;
+ 304   1      }
+ 305          
+ 306          /*--------------------------------------------------------
+ 307                  ComMode_4_Data()
+ 308                  
+ 309                  发信号给附机，让其语音提示“电动车被抬起”
+ 310          ---------------------------------------------------------*/
+ 311          
+ 312          void ComMode_4_Data()//发送抬起编码
+ 313          {
+ 314   1              unsigned char i,n;
+ 315   1              receiver_EN = 1;
+ 316   1              transmiter_power = 0;
+ 317   1              transmiter_EN = 0;
+ 318   1              myTxRxData[0]=CmdHead;
+ 319   1              myTxRxData[1]=MyAddress;
+ 320   1              myTxRxData[2]=ComMode_4;
+ 321   1      /*      myTxRxData[3]=0x00;
+ 322   1              myTxRxData[4]=0x00;
+ 323   1              myTxRxData[5]=0x00;
+ 324   1              myTxRxData[6]=0x00;
+ 325   1      */
+ 326   1              initsignal3();
+ 327   1      
+ 328   1              for(i=0;i<3;i++)
+ 329   1              {
+ 330   2                      for(n=0;n<8;n++)
+ 331   2                      {
+ 332   3                              if((myTxRxData[i]&0x80)==0x80)//为1
+ 333   3                              {
+ 334   4                                      P10=0;
+ 335   4                                      Delay4(120);//延时4.5ms以上，由于定时器占用问题，只能用这种延时来实现
+ 336   4                              }
+ 337   3                              else//为0的情况
+ 338   3                              {
+ 339   4                                      P10=0;
+ 340   4                                      Delay4(80);//延时2ms，由于定时器占用问题，只能用这种延时来实现
+ 341   4                              }
+ 342   3                              P10=1;//常态为高电平
+ 343   3                              myTxRxData[i]<<=1;
+ 344   3                              Delay4(50);//延时要大于2ms
+ 345   3                      }
+ 346   2              }
+ 347   1              transmiter_EN = 1;
+ 348   1              transmiter_power = 1;
+ 349   1              receiver_EN = 0;
+ 350   1      }
+ 351          
+ 352          /*-----------------------------------------------------------
+ 353                  ComMode_5_Data()
+ 354                  
+ 355                  发信号给附机，让其语音提示“电动车倒地了”
+ 356          ------------------------------------------------------------*/
+ 357          
+ 358          void ComMode_5_Data()//发送倒地编码
+ 359          {
+ 360   1              unsigned char i,n;
+ 361   1              receiver_EN = 1;
+ 362   1              transmiter_power = 0;//切换为300M发射
+ 363   1              transmiter_EN = 0;      //打开无线发射机
+ 364   1              myTxRxData[0]=CmdHead;
+C51 COMPILER V9.51   COMMUNICATION                                                         08/16/2014 14:14:28 PAGE 7   
+
+ 365   1              myTxRxData[1]=MyAddress;
+ 366   1              myTxRxData[2]=ComMode_5;
+ 367   1      /*      myTxRxData[3]=0x00;
+ 368   1              myTxRxData[4]=0x00;
+ 369   1              myTxRxData[5]=0x00;
+ 370   1              myTxRxData[6]=0x00;
+ 371   1      */
+ 372   1              initsignal3();
+ 373   1      
+ 374   1              for(i=0;i<3;i++)
+ 375   1              {
+ 376   2                      for(n=0;n<8;n++)
+ 377   2                      {
+ 378   3                              if((myTxRxData[i]&0x80)==0x80)//为1
+ 379   3                              {
+ 380   4                                      P10=0;
+ 381   4                                      Delay4(120);//延时4.5ms以上，由于定时器占用问题，只能用这种延时来实现
+ 382   4                              }
+ 383   3                              else//为0的情况
+ 384   3                              {
+ 385   4                                      P10=0;
+ 386   4                                      Delay4(80);//延时2ms，由于定时器占用问题，只能用这种延时来实现
+ 387   4                              }
+ 388   3                              P10=1;//常态为高电平
+ 389   3                              myTxRxData[i]<<=1;
+ 390   3                              Delay4(50);//延时要大于2ms
+ 391   3                      }
+ 392   2              }
+ 393   1              transmiter_EN = 1;
+ 394   1              transmiter_power = 1;
+ 395   1              receiver_EN = 0;
+ 396   1      }
+ 397          
+ 398          /*-----------------------------------------------------------
+ 399                  ComMode_6_Data()
+ 400                  
+ 401                  发信号给附机，让其语音提示“电动车倒地了”
+ 402          ------------------------------------------------------------*/
+ 403          
+ 404          void ComMode_6_Data()//发送倒地编码
+ 405          {
+ 406   1              unsigned char i,n;
+ 407   1              receiver_EN = 1;
+ 408   1              transmiter_power = 0;//切换为300M发射
+ 409   1              transmiter_EN = 0;      //打开无线发射机
+ 410   1              myTxRxData[0]=CmdHead;
+ 411   1              myTxRxData[1]=MyAddress;
+ 412   1              myTxRxData[2]=ComMode_6;
+ 413   1      /*      myTxRxData[3]=0x00;
+ 414   1              myTxRxData[4]=0x00;
+ 415   1              myTxRxData[5]=0x00;
+ 416   1              myTxRxData[6]=0x00;
+ 417   1      */
+ 418   1              initsignal3();
+ 419   1      
+ 420   1              for(i=0;i<3;i++)
+ 421   1              {
+ 422   2                      for(n=0;n<8;n++)
+ 423   2                      {
+ 424   3                              if((myTxRxData[i]&0x80)==0x80)//为1
+ 425   3                              {
+ 426   4                                      P10=0;
+C51 COMPILER V9.51   COMMUNICATION                                                         08/16/2014 14:14:28 PAGE 8   
+
+ 427   4                                      Delay4(120);//延时4.5ms以上，由于定时器占用问题，只能用这种延时来实现
+ 428   4                              }
+ 429   3                              else//为0的情况
+ 430   3                              {
+ 431   4                                      P10=0;
+ 432   4                                      Delay4(80);//延时2ms，由于定时器占用问题，只能用这种延时来实现
+ 433   4                              }
+ 434   3                              P10=1;//常态为高电平
+ 435   3                              myTxRxData[i]<<=1;
+ 436   3                              Delay4(50);//延时要大于2ms
+ 437   3                      }
+ 438   2              }
+ 439   1              transmiter_EN = 1;
+ 440   1              transmiter_power = 1;
+ 441   1              receiver_EN = 0;
+ 442   1      }
+ 443          
+ 444          /*-----------------------------------------------------------------------------
+ 445                  receive_byte()
+ 446                  receive a byte program
+ 447          -----------------------------------------------------------------------------*/
+ 448          void receive_byte(void)
+ 449                  {
+ 450   1              // P11 constantly HV, if detected a LV, judge it.
+ 451   1              if(P11 == 0)
+ 452   1                      {
+ 453   2                      // count the LV time, if more than 12ms, reset it.
+ 454   2                      if(++receive_LV_count == 120)
+ 455   2                              {
+ 456   3                              receive_LV_count = 0;
+ 457   3                              }
+ 458   2                      receive_wire_flag = 0;
+ 459   2                      }
+ 460   1              // if P11 return to HV
+ 461   1              else
+ 462   1                      {
+ 463   2                      // and already have LV before, so we think it maybe a bit signal
+ 464   2                      if(receive_wire_flag == 0)
+ 465   2                              {
+ 466   3                              // set the flag, to judge a bit only one time
+ 467   3                              receive_wire_flag = 1;
+ 468   3      
+ 469   3                              // judge the LV time, if 3.5ms < time < 8ms, we think it is a "0". time<3.5ms means a noise.
+ 470   3                              if((receive_LV_count > 35)&&(receive_LV_count <= 80))   
+ 471   3                                      {
+ 472   4                                      // save "0" to one byte
+ 473   4                                      one_receive_byte <<= 1;
+ 474   4                                      one_receive_byte &= 0xfe;
+ 475   4                                      one_receive_byte_count++;
+ 476   4                                      receive_HV_count = 0;
+ 477   4                                      }
+ 478   3                              // time > 8ms, means a "1"
+ 479   3                              else if((receive_LV_count > 80))
+ 480   3                                      {
+ 481   4                                      // save "1" to one byte
+ 482   4                                      one_receive_byte <<= 1;
+ 483   4                                      one_receive_byte |= 0x01;
+ 484   4                                      one_receive_byte_count++;
+ 485   4                                      receive_HV_count = 0;
+ 486   4                                      }
+ 487   3                              
+ 488   3                              else
+C51 COMPILER V9.51   COMMUNICATION                                                         08/16/2014 14:14:28 PAGE 9   
+
+ 489   3                                      {
+ 490   4                                      // increase the count for HV
+ 491   4                                      receive_HV_count++;     
+ 492   4                                      }
+ 493   3               // reset LV count
+ 494   3                              receive_LV_count = 0;
+ 495   3                              }
+ 496   2                      else
+ 497   2                              {
+ 498   3                              // judge whether HV count > 6ms, if yes, means a restart
+ 499   3                              if(++receive_HV_count >= 60)
+ 500   3                                      {
+ 501   4                                      one_receive_byte_count = 0;
+ 502   4                                      receive_wire_flag = 1;
+ 503   4                                      data_count = 0;
+ 504   4                                      }               
+ 505   3                              }
+ 506   2                      }
+ 507   1              }
+ 508          
+ 509          /*-----------------------------------------------------------------------------
+ 510                  receive_word()
+ 511                  receive a word program
+ 512          -----------------------------------------------------------------------------*/
+ 513          void receive_word(void)
+ 514                  {
+ 515   1              // one byte have 8 bit, once receive a bit, the count increase, once it is 8, it means a byte received.
+ 516   1              if(one_receive_byte_count == 8)
+ 517   1                      {
+ 518   2                      one_receive_byte_count = 0;
+ 519   2                      // assign one byte to buffer[i] 
+ 520   2                      received_data_buffer[data_count] = one_receive_byte;
+ 521   2                      
+ 522   2                      // judge whether buffer[0] is CmdHead
+ 523   2                      if((data_count == 0) && (received_data_buffer[0] == CmdHead))
+ 524   2                              {
+ 525   3                              data_count = 1;
+ 526   3                              }
+ 527   2                      // judge whether buffer[1] is MyAddress
+ 528   2                      else if((data_count == 1) && (received_data_buffer[1] == MyAddress))
+ 529   2                              {
+ 530   3                              data_count = 2;
+ 531   3                              }
+ 532   2                      else if(data_count == 2)
+ 533   2                              {
+ 534   3                              receive_data_finished_flag = 1;
+ 535   3                              data_count = 0;
+ 536   3                              }
+ 537   2                      else 
+ 538   2                              {
+ 539   3                              data_count = 0;
+ 540   3                              }
+ 541   2                      }
+ 542   1              }
+ 543          
+ 544          /*--------------------------------------------------
+ 545                  send_code_to_lock()
+ 546                  
+ 547                  将密码发送给锁体。
+ 548          ---------------------------------------------------*/
+ 549          
+ 550          void send_code_to_lock(void)    
+C51 COMPILER V9.51   COMMUNICATION                                                         08/16/2014 14:14:28 PAGE 10  
+
+ 551          {
+ 552   1              unsigned char i,n;
+ 553   1              myTxRxData[0]=CmdHead;
+ 554   1              myTxRxData[1]=MyAddress;
+ 555   1              myTxRxData[2]=ComMode_1;
+ 556   1      /*      myTxRxData[3]=0x00;
+ 557   1              myTxRxData[4]=0x00;
+ 558   1              myTxRxData[5]=0x00;
+ 559   1              myTxRxData[6]=0x00;
+ 560   1      */
+ 561   1              for(i=0;i<3;i++)
+ 562   1              {
+ 563   2                      for(n=0;n<8;n++)
+ 564   2                      {
+ 565   3                              if((myTxRxData[i]&0x80) == 0x80)//为1
+ 566   3                              {
+ 567   4                                      MagentControl_1 = 0;
+ 568   4                                      Delay4(120);//延时4.5ms以上，由于定时器占用问题，只能用这种延时来实现
+ 569   4                              }
+ 570   3                              else//为0的情况
+ 571   3                              {
+ 572   4                                      MagentControl_1 = 0;
+ 573   4                                      Delay4(80);//延时2ms，由于定时器占用问题，只能用这种延时来实现
+ 574   4                              }
+ 575   3                              MagentControl_1 = 1;            //常态为高电平
+ 576   3                              myTxRxData[i] <<= 1;
+ 577   3                              Delay4(50);             //延时要大于2ms
+ 578   3                      }
+ 579   2              }
+ 580   1      }
+ 581          
+ 582          /*--------------------------------------------------
+ 583                  send_code_to_lock_for_Unlock()
+ 584                  
+ 585                  将密码发送给锁体。
+ 586          ---------------------------------------------------*/
+ 587          
+ 588          void send_code_to_lock_for_Unlock(void) 
+ 589          {
+ 590   1              unsigned char i,n;
+ 591   1              myTxRxData[0]=CmdHead;
+ 592   1              myTxRxData[1]=MyAddress;
+ 593   1              myTxRxData[2]=ComMode_1;
+ 594   1      /*      myTxRxData[3]=0x00;
+ 595   1              myTxRxData[4]=0x00;
+ 596   1              myTxRxData[5]=0x00;
+ 597   1              myTxRxData[6]=0x00;
+ 598   1      */
+ 599   1              for(i=0;i<3;i++)
+ 600   1              {
+ 601   2                      for(n=0;n<8;n++)
+ 602   2                      {
+ 603   3                              if((myTxRxData[i]&0x80) == 0x80)//为1
+ 604   3                              {
+ 605   4                                      MagentControl_2 = 0;
+ 606   4                                      Delay4(120);//延时4.5ms以上，由于定时器占用问题，只能用这种延时来实现
+ 607   4                              }
+ 608   3                              else//为0的情况
+ 609   3                              {
+ 610   4                                      MagentControl_2 = 0;
+ 611   4                                      Delay4(80);//延时2ms，由于定时器占用问题，只能用这种延时来实现
+ 612   4                              }
+C51 COMPILER V9.51   COMMUNICATION                                                         08/16/2014 14:14:28 PAGE 11  
+
+ 613   3                              MagentControl_2 = 1;            //常态为高电平
+ 614   3                              myTxRxData[i] <<= 1;
+ 615   3                              Delay4(50);             //延时要大于2ms
+ 616   3                      }
+ 617   2              }
+ 618   1      }
+ 619                  
+ 620          /*---------------------------------------------------
+ 621                  end of file
+ 622          ----------------------------------------------------*/
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   1151    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      7      27
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

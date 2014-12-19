@@ -1,0 +1,113 @@
+C51 COMPILER V9.51   PWM                                                                   08/28/2014 15:47:45 PAGE 1   
+
+
+C51 COMPILER V9.51, COMPILATION OF MODULE PWM
+OBJECT MODULE PLACED IN .\pwm.obj
+COMPILER INVOKED BY: D:\Program Files (x86)\keil\C51\BIN\C51.EXE ..\Library\pwm.c BROWSE INCDIR(..\Library) DEBUG OBJECT
+                    -EXTEND PRINT(.\pwm.lst) OBJECT(.\pwm.obj)
+
+line level    source
+
+   1          /*---------------------------------------------------
+   2                  pwm.c (v1.00)
+   3                  
+   4                  方波输出功能
+   5          ---------------------------------------------------*/
+   6          
+   7          #include "main.h"
+   8          #include "port.h"
+   9          
+  10          #include "pwm.h"
+  11          
+  12          /*------ private variable --------------------------*/
+  13          tWord PWM_shadow;
+  14          
+  15          /*---------------------------------------------------
+  16                  Init_PWM()
+  17                  初始化PWM端口
+  18          ----------------------------------------------------*/
+  19          void Init_PWM(void)
+  20                  {    
+  21   1              // Enable PWM and select auto reload mode 
+  22   1              PWMCON0 = 0xC0;                        
+  23   1      
+  24   1              PWM_shadow = PWMP;
+  25   1              // PWM Period
+  26   1              PWMPH = HIBYTE(PWM_shadow);         
+  27   1              PWMPL = LOBYTE(PWM_shadow);                               
+  28   1              }
+  29          
+  30          /*---------------------------------------------------
+  31                  PWM_Channel()
+  32                  choose the PWM channel
+  33          ----------------------------------------------------*/
+  34          void PWM_Channel(E_PWMCNL_SEL Channel)  
+  35                  {
+  36   1          switch(Channel)
+  37   1                      {
+  38   2                      // PWM0 Duty (P0.1)
+  39   2                      case E_CHANNEL0:
+  40   2                              {
+  41   3                              PWM_shadow = PWM0_Duty;
+  42   3                              PWM0H = HIBYTE(PWM_shadow);
+  43   3                              PWM0L = LOBYTE(PWM_shadow);
+  44   3                              }
+  45   2                      break;
+  46   2                      // PWM1 Duty (P1.6)
+  47   2                      case E_CHANNEL1:
+  48   2                              {
+  49   3                              PWM_shadow = PWM1_Duty;
+  50   3                              PWM1H = HIBYTE(PWM_shadow);
+  51   3                              PWM1L = LOBYTE(PWM_shadow);
+  52   3                              }
+  53   2                      break;
+  54   2                      // PWM2 Duty (P1.7)
+C51 COMPILER V9.51   PWM                                                                   08/28/2014 15:47:45 PAGE 2   
+
+  55   2                      case E_CHANNEL2:
+  56   2                              {
+  57   3                              PWM_shadow = PWM2_Duty;
+  58   3                              PWM2H = HIBYTE(PWM_shadow);
+  59   3                              PWM2L = LOBYTE(PWM_shadow);                     
+  60   3                              }
+  61   2                      break;
+  62   2                      // PWM3 Duty (P0.0)
+  63   2                      case E_CHANNEL3:
+  64   2                              {
+  65   3                              PWM_shadow = PWM3_Duty;
+  66   3                              PWM3H = HIBYTE(PWM_shadow);
+  67   3                              PWM3L = LOBYTE(PWM_shadow);
+  68   3                              }
+  69   2                      break; 
+  70   2                      }       
+  71   1              }
+  72          
+  73          /*-------------------------------------------------------
+  74                  myPwm()
+  75                  方波输出打开
+  76          --------------------------------------------------------*/
+  77          void myPwm()
+  78                  {
+  79   1              // choose channel for pwm
+  80   1              PWM_Channel(E_CHANNEL0);         
+  81   1              // pwm out enable
+  82   1              Init_PWM();                        
+  83   1              }
+  84          
+  85          /*---------------------------------------------------
+  86                  end of file
+  87          ----------------------------------------------------*/ 
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    100    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      2    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

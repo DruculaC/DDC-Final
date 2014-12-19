@@ -1,0 +1,14 @@
+"Main.obj",
+".\AD.obj",
+".\Battery.obj",
+".\communication.obj",
+".\Delay.obj",
+".\operation.obj",
+".\Other.obj",
+".\pwm.obj",
+".\Timer.obj",
+".\UART.obj",
+".\voice.obj",
+".\ISP_DataFlash.obj" 
+TO "DDC-Z2" 
+RAMSIZE(256) 
