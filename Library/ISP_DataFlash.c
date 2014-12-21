@@ -1,5 +1,8 @@
 #include "ISP_DataFlash.h"
-#include "N79E81x.h"
+#include "main.h"
+
+extern tByte received_data_buffer[7];		
+
 
 //-----------------------------------------------------------------------------------------------------------
 void Enable_ISP(void)
@@ -69,3 +72,23 @@ unsigned char Flash_Read_Data(unsigned int address)
 	Disable_ISP();
 	return dat;		
 }
+
+/*---------------------------------------------------------------
+	Self_learn_programming(void)
+	自学习功能，将密码烧录到flash ROM中
+----------------------------------------------------------------*/
+
+void Self_learn_programming(void)
+	{
+	Flash_Page_Erase(0x3000);
+	Flash_Write_Data(0x3000, received_data_buffer[0]);		
+	Flash_Write_Data(0x3001, received_data_buffer[1]);		
+	Flash_Write_Data(0x3002, received_data_buffer[2]);		
+	Flash_Write_Data(0x3003, received_data_buffer[3]);		
+	Flash_Write_Data(0x3004, received_data_buffer[4]);
+	Flash_Write_Data(0x3005, received_data_buffer[5]);
+	}
+	
+/*---------------------------------------------------
+	end of file
+----------------------------------------------------*/

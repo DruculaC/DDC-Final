@@ -61,6 +61,7 @@ sbit lock_code = P0^1;
 
 // P1.2, PIN12, 电磁铁过流检测
 sbit magnet_overcurrent = P1^2;
+sbit ElecMotor_overcurrent = P1^2;
 
 // P0.2, PIN25, 车轮转动检测
 sbit wheeled_rotate = P0^2;

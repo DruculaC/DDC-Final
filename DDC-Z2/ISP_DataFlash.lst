@@ -1,93 +1,116 @@
-C51 COMPILER V9.51   ISP_DATAFLASH                                                         12/17/2014 14:17:41 PAGE 1   
+C51 COMPILER V9.51   ISP_DATAFLASH                                                         12/21/2014 14:52:17 PAGE 1   
 
 
 C51 COMPILER V9.51, COMPILATION OF MODULE ISP_DATAFLASH
 OBJECT MODULE PLACED IN .\ISP_DataFlash.obj
 COMPILER INVOKED BY: D:\Program Files (x86)\keil\C51\BIN\C51.EXE ..\Library\ISP_DataFlash.c COMPACT BROWSE INCDIR(..\Lib
-                    -rary) DEBUG OBJECTEXTEND PRINT(.\ISP_DataFlash.lst) OBJECT(.\ISP_DataFlash.obj)
+                    -rary) DEBUG OBJECTEXTEND PRINT(.\ISP_DataFlash.lst) TABS(3) OBJECT(.\ISP_DataFlash.obj)
 
 line level    source
 
    1          #include "ISP_DataFlash.h"
-   2          #include "N79E81x.h"
+   2          #include "main.h"
    3          
-   4          //--------------------------------------------------------------------------------------------------------
+   4          extern tByte received_data_buffer[7];     
+   5          
+   6          
+   7          //--------------------------------------------------------------------------------------------------------
              ----
-   5          void Enable_ISP(void)
-   6          {   
-   7   1              /* Enable ISP  */ 
-   8   1              ISPCN=0x30;
-   9   1              EA=0;
-  10   1              TA = 0xAA;
-  11   1              TA = 0x55;
-  12   1              CHPCON |= 0x01; 
-  13   1              EA=1;
-  14   1              Trigger_ISP();     
-  15   1      }
-  16          //--------------------------------------------------------------------------------------------------------
+   8          void Enable_ISP(void)
+   9          {   
+  10   1         /* Enable ISP  */ 
+  11   1         ISPCN=0x30;
+  12   1         EA=0;
+  13   1         TA = 0xAA;
+  14   1         TA = 0x55;
+  15   1         CHPCON |= 0x01; 
+  16   1         EA=1;
+  17   1         Trigger_ISP();     
+  18   1      }
+  19          //--------------------------------------------------------------------------------------------------------
              ----
-  17          void Disable_ISP(void)
-  18          {   
-  19   1              /* Disable ISP */ 
-  20   1              ISPCN=0x30;
-  21   1              Trigger_ISP(); 
-  22   1              EA=0;
-  23   1              TA = 0xAA;
-  24   1              TA = 0x55;
-  25   1              CHPCON &= 0xFE; 
-  26   1              EA=1;     
-  27   1      }
-  28          //--------------------------------------------------------------------------------------------------------
+  20          void Disable_ISP(void)
+  21          {   
+  22   1         /* Disable ISP */ 
+  23   1         ISPCN=0x30;
+  24   1         Trigger_ISP(); 
+  25   1         EA=0;
+  26   1         TA = 0xAA;
+  27   1         TA = 0x55;
+  28   1         CHPCON &= 0xFE; 
+  29   1         EA=1;     
+  30   1      }
+  31          //--------------------------------------------------------------------------------------------------------
              ----
-  29          void Trigger_ISP(void)
-  30          {       
-  31   1              EA=0;
-  32   1              TA = 0xAA;
-  33   1              TA = 0x55;
-  34   1              ISPTRG |= 0x01;
-  35   1              EA=1;      
-  36   1      }
-  37          
-  38          void Flash_Page_Erase(unsigned int address)
-  39          {
-  40   1              Enable_ISP();
-  41   1              ISPCN=0x22;
-  42   1              ISPAH=address/256;
-  43   1              ISPAL=address%256;
-  44   1              Trigger_ISP();
-  45   1              Disable_ISP();  
-  46   1      }
-  47          
-  48          void Flash_Write_Data(unsigned int address,unsigned char dat)
-  49          {
-  50   1              Enable_ISP();
-  51   1              ISPCN=0x21;
-C51 COMPILER V9.51   ISP_DATAFLASH                                                         12/17/2014 14:17:41 PAGE 2   
+  32          void Trigger_ISP(void)
+  33          {       
+  34   1         EA=0;
+  35   1         TA = 0xAA;
+  36   1         TA = 0x55;
+  37   1         ISPTRG |= 0x01;
+  38   1         EA=1;      
+  39   1      }
+  40          
+  41          void Flash_Page_Erase(unsigned int address)
+  42          {
+  43   1         Enable_ISP();
+  44   1         ISPCN=0x22;
+  45   1         ISPAH=address/256;
+  46   1         ISPAL=address%256;
+  47   1         Trigger_ISP();
+  48   1         Disable_ISP(); 
+  49   1      }
+  50          
+  51          void Flash_Write_Data(unsigned int address,unsigned char dat)
+C51 COMPILER V9.51   ISP_DATAFLASH                                                         12/21/2014 14:52:17 PAGE 2   
 
-  52   1              ISPAH=address/256;
-  53   1              ISPAL=address%256;
-  54   1              ISPFD=dat;
-  55   1              Trigger_ISP();
-  56   1              Disable_ISP();  
-  57   1      }
-  58          
-  59          unsigned char Flash_Read_Data(unsigned int address)
-  60          {
-  61   1              unsigned char dat;
-  62   1              
-  63   1              Enable_ISP();
-  64   1              ISPCN=0x00;
-  65   1              ISPAH=address/256;
-  66   1              ISPAL=address%256;
-  67   1              Trigger_ISP();
-  68   1              dat=ISPFD;
-  69   1              Disable_ISP();
-  70   1              return dat;             
-  71   1      }
+  52          {
+  53   1         Enable_ISP();
+  54   1         ISPCN=0x21;
+  55   1         ISPAH=address/256;
+  56   1         ISPAL=address%256;
+  57   1         ISPFD=dat;
+  58   1         Trigger_ISP();
+  59   1         Disable_ISP(); 
+  60   1      }
+  61          
+  62          unsigned char Flash_Read_Data(unsigned int address)
+  63          {
+  64   1         unsigned char dat;
+  65   1         
+  66   1         Enable_ISP();
+  67   1         ISPCN=0x00;
+  68   1         ISPAH=address/256;
+  69   1         ISPAL=address%256;
+  70   1         Trigger_ISP();
+  71   1         dat=ISPFD;
+  72   1         Disable_ISP();
+  73   1         return dat;    
+  74   1      }
+  75          
+  76          /*---------------------------------------------------------------
+  77             Self_learn_programming(void)
+  78             自学习功能，将密码烧录到flash ROM中
+  79          ----------------------------------------------------------------*/
+  80          
+  81          void Self_learn_programming(void)
+  82             {
+  83   1         Flash_Page_Erase(0x3000);
+  84   1         Flash_Write_Data(0x3000, received_data_buffer[0]);    
+  85   1         Flash_Write_Data(0x3001, received_data_buffer[1]);    
+  86   1         Flash_Write_Data(0x3002, received_data_buffer[2]);    
+  87   1         Flash_Write_Data(0x3003, received_data_buffer[3]);    
+  88   1         Flash_Write_Data(0x3004, received_data_buffer[4]);
+  89   1         Flash_Write_Data(0x3005, received_data_buffer[5]);
+  90   1         }
+  91             
+  92          /*---------------------------------------------------
+  93             end of file
+  94          ----------------------------------------------------*/
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =    156    ----
+   CODE SIZE        =    225    ----
    CONSTANT SIZE    =   ----    ----
    XDATA SIZE       =   ----    ----
    PDATA SIZE       =   ----       8

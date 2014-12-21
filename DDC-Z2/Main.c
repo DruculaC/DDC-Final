@@ -19,6 +19,8 @@
 #include "operation.h"
 #include "UART.h"
 #include "ISP_DataFlash.h"
+#include "schedular.h"
+#include "ElecMotor.h"
 
                                         
 /*------- Public variable declarations --------------------------*/
@@ -99,6 +101,7 @@ bit IDkey_flash_EN = 0;
 
 tByte IDkey_certificated_times = 0;
 bit Silence_Flag = 0;
+bit flashing_flag = 0;
 
 /*------- Private variable declarations --------------------------*/
 
@@ -125,7 +128,7 @@ void main()
 
 	P10=1;
 	
-	horizontal_sensor = 1;
+//	horizontal_sensor = 1;
 	
 	// turn off transmitter, turn on receiver
 	transmiter_EN = 1;
@@ -142,29 +145,20 @@ void main()
 	voice_EN=0;		//将功放关闭
    
 	// lock the external motor, 防止锁还没完全打开的时候，车手加电导致轮子与锁的告诉碰撞。 
-	motor_lock = 0;
+	motor_lock = 1;
 	TR0 = 1;
 	
 	while(1)
 		{
-
-		if((sensor_detect == 0)||(horizontal_sensor == 0))
-			{
-			Delay(2);
-			if((sensor_detect == 0)||(horizontal_sensor == 0))
-				{
-				vibration_flag = 1;
-				vibration_count = 0;			
-				}
-			}		
-			
+      SCH_Dispatch_Tasks();
+		
 		// whether host has been touched 3 times, if yes, then alarm 2 speech alternantively.
 		if((host_stolen_alarm1_EN == 1)&&(host_stolen_alarm1_count < 4))
 			{
 			stolen_alarm_flag = 1;
 			if(key_rotate == 0)
 				{
-				stolen_alarm_speech1();
+				SCH_Add_Task(stolen_alarm_speech1, 0, 0);
 				}
 			if(++host_stolen_alarm1_count >= 4)
 				{
@@ -179,7 +173,7 @@ void main()
 			stolen_alarm_flag = 1;
 			if(key_rotate == 0)
 				{
-				stolen_alarm_speech2();
+				SCH_Add_Task(stolen_alarm_speech2, 0, 0);
 				}
 			if(++host_stolen_alarm2_count >= 4)
 				{
@@ -189,18 +183,6 @@ void main()
 				sensor_3rdalarm_flag = 0;
 				}
 			}
-		
-		// judge whether battery has been stolen, 0.4V/4V
-		if((ADC_check_result < 0x096) && (key_rotate == 0))
-			{
-			battery_stolen_EN = 1;
-			}			
-		else if(ADC_check_result > 0x100)
-			{
-			battery_stolen_EN = 0;
-			battery_stolen_count = 0;
-			}			
-
 		}
 	}
 
@@ -221,9 +203,9 @@ void timer0() interrupt interrupt_timer_0_overflow
 		// reset timer0 ticket counter every 2s
 		timer0_count=0;
 		
+		// Check Battery's voltage
 		if(motor_lock == 0)
-			// detect the battery voltage
-			ADC_check_result = GetADCResult(6);
+			SCH_Add_Task(CheckADC, 0, 0);
 		
 		if(IDkey_flag == 1)
 			{
@@ -232,7 +214,6 @@ void timer0() interrupt interrupt_timer_0_overflow
 				IDkey_count = 0;
 				IDkey_flag = 0;
 				IDkey_certificated_times = 0;
-				Silence_Flag = 0;
 				if(key_rotated_on_flag == 0)
 					{
 					enable_sensor();					
@@ -268,9 +249,11 @@ void timer0() interrupt interrupt_timer_0_overflow
 	if(IDkey_speech_flash == 1)
 		{
 		IDkey_speech_flash = 0;
-		ID_speech();
+//		SCH_Add_Task(ID_speech, 0, 0);
+      ID_speech();
+		SCH_Delete_Program(stolen_alarm_speech1);
+		SCH_Delete_Program(stolen_alarm_speech2);
 		}
-
 
 	if(key_rotate == 1)
 		{
@@ -323,44 +306,33 @@ void timer0() interrupt interrupt_timer_0_overflow
 	if(IDkey_flash_EN == 1)
 		{
 		IDkey_flash_EN = 0;
+		flashing_flag = 1;
 		IDkey_selflearn_flag1 = 0;
 		IDkey_selflearn_flag2 = 0;
 		IDkey_selflearn_flag3 = 0;
 		IDkey_selflearn_flag4 = 0;
 		IDkey_selflearn_flag5 = 0;
 		IDkey_selflearn_flag6 = 0;
-		Flash_Page_Erase(0x3000);
-		Flash_Write_Data(0x3000, received_data_buffer[0]);		
-		Flash_Write_Data(0x3001, received_data_buffer[1]);		
-		Flash_Write_Data(0x3002, received_data_buffer[2]);		
-		Flash_Write_Data(0x3003, received_data_buffer[3]);		
-		Flash_Write_Data(0x3004, received_data_buffer[4]);
-		Flash_Write_Data(0x3005, received_data_buffer[5]);
-		
-		ID_speech();
-		Delay(10);
-		ID_speech();
+		SCH_Add_Task(Self_learn_programming, 0, 0);
+		SCH_Add_Task(Self_learn_speech, 0, 0);
 		}
 	
 	// detect whether key is rotated on,  
 	if((key_rotate == 1)&&(key_rotated_on_flag == 0)&&(IDkey_flag == 1))		
 		{
-		Delay(5);
+		Delay_1ms();
 		// anti-trigger, Delay(5) confirm the key rotation.
 		if(key_rotate == 1)
 			{
-			// turn on the magnet
-			if(battery_stolen_EN == 1)
-				magnet_CW(6000, 2100, 28);
-            else
-				magnet_CW(6000, 2100, 28);
-			slave_nearby_operation();
-			// flag key rotation status
-			key_rotated_on_flag = 1;
-			
+			disable_sensor();
+
 			IDkey_count = 0;
 			IDkey_flag = 0;
 			IDkey_certificated_times = 0;
+
+			SCH_Add_Task(ElecMotor_CW, 0, 0);
+
+			SCH_Add_Task(slave_nearby_operation, 0, 0);
 			}
 		} 		
 				
@@ -369,27 +341,13 @@ void timer0() interrupt interrupt_timer_0_overflow
 		{
 		if((vibration_flag == 0)&&(wheeled_flag == 0))
 			{
-			Delay(5);
+			Delay_1ms();
 			if(key_rotate == 0)
 				{
-				// handle with battery status
-				if(Silence_Flag == 0)
-					verifybattery(ADC_check_result);
-				
 				// reset key rotation flag
 				key_rotated_on_flag=0;
-				// turn off the magnet 
-				if(battery_stolen_EN == 1)
-					magnet_ACW(5000, 2100);
-				else
-					magnet_ACW(5000, 2100);
-					
-				slave_away_operation();
-				
-				IDkey_certificated_times = 0;
-
-				if(Silence_Flag == 1)
-					Silence_Flag = 0;
+				SCH_Add_Task(slave_away_operation, 0, 0);
+									
 				}				
 			}
 		}
@@ -420,9 +378,27 @@ void timer0() interrupt interrupt_timer_0_overflow
 			{
 			wheeled_flag = 0;
 			wheeled_count = 0;
-            }
+         }
 		}
-				
+	
+			
+	if((sensor_detect == 0)||(horizontal_sensor == 0))
+		{
+		vibration_flag = 1;
+		vibration_count = 0;			
+		}		
+		
+	
+	// judge whether battery has been stolen, 0.4V/4V
+	if((ADC_check_result < 0x096) && (key_rotate == 0))
+		{
+		battery_stolen_EN = 1;
+		}			
+	else if(ADC_check_result > 0x100)
+		{
+		battery_stolen_EN = 0;
+		battery_stolen_count = 0;
+		}			
 
 	// judge host is fell or raised every 1ms?
 	if((raised_sensor_detect == 1)&&(fell_sensor_detect == 1))
@@ -439,16 +415,17 @@ void timer0() interrupt interrupt_timer_0_overflow
 					
 					// judge host been touched and also not in vibration alarm
 //					if((sensor_detect == 0)&&(stolen_alarm_flag == 0)&&(transmiter_EN == 1))		
-					if(((sensor_detect == 0)||(horizontal_sensor == 0))&&(stolen_alarm_flag == 0))		
+					if(((sensor_detect == 0)||(horizontal_sensor == 0))&&(stolen_alarm_flag == 0)&&(flashing_flag == 0))		
 						{
 						// judge LV is more than 2ms, if yes, it means a effective touch
-						if(++sensor_1ststage_count >= 2)			
+						if(++sensor_1ststage_count >= 1)			
 							{
 							sensor_1ststage_count=0;
 							
 							// sensor trigge status progress to case 1.
 							sensor_trigger_count = 1;
-							// alarm speech for first touoch
+							// alarm speech for first touch
+//							SCH_Add_Task(host_touch_speech, 0, 0);
 							host_touch_speech();
                      }
 						}
@@ -466,11 +443,12 @@ void timer0() interrupt interrupt_timer_0_overflow
 					if((sensor_detect == 0)||(horizontal_sensor == 0))
 						{
 						// LV for 2s, means a effective touch
-						if(++sensor_2ndstage_count >= 2)
+						if(++sensor_2ndstage_count >= 1)
 							{
 							sensor_2ndstage_count = 0;
 							sensor_trigger_count = 2;
 							// alarm speech for 2nd touch
+//							SCH_Add_Task(host_2ndtouch_speech, 0, 0);
 							host_2ndtouch_speech();
 							}
 						}
@@ -650,33 +628,34 @@ void uart_isr() interrupt 4
 		if(IDkey_selflearn_flag6 == 0)
 			{
 			// judge whether buffer[0] is CmdHead
-			if((data_count == 0) && (received_data_buffer[0] == IDkey6))
+			if((data_count == 0) && (received_data_buffer[0] == IDkey0))
 				{
 				data_count = 1;
 				}
-			else if((data_count == 1) && (received_data_buffer[1] == IDkey7))
+			else if((data_count == 1) && (received_data_buffer[1] == IDkey1))
 				{
 				data_count = 2;
 				}
-			else if((data_count == 2) && (received_data_buffer[2] == IDkey8))
+			else if((data_count == 2) && (received_data_buffer[2] == IDkey2))
 				{
 				data_count = 3;
 				}
-			else if((data_count == 3) && (received_data_buffer[3] == IDkey9))
+			else if((data_count == 3) && (received_data_buffer[3] == IDkey3))
 				{
 				data_count = 4;
 				}
-			else if((data_count == 4) && (received_data_buffer[4] == IDkey10))
+			else if((data_count == 4) && (received_data_buffer[4] == IDkey4))
 				{
 				data_count = 5;
 				}
-			else if((data_count == 5) && (received_data_buffer[5] == IDkey11))
+			else if((data_count == 5) && (received_data_buffer[5] == IDkey5))
 				{
 				data_count = 0;	
 				IDkey_flag = 1;
 				IDkey_count = 0;
 				disable_sensor();
 				IDkey_speech_flash = 1;
+				
 				if(IDkey_certificated_times++ >= 1)
 					{
 					Silence_Flag = 1;

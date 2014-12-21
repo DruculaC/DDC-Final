@@ -9,6 +9,50 @@
 
 #include "Delay.h"
 
+tWord Timeout_loop = 0;
+
+/*------------------------------------------------------------------*/
+void Delay_1ms(void)
+   {
+   Timeout_loop = LOOP_TIMEOUT_INIT_001ms;
+
+   // Simple loop timeout...
+   while (++Timeout_loop != 0);
+   }
+/*------------------------------------------------------------------*/
+void Delay_5ms(void)
+   {
+   Timeout_loop = LOOP_TIMEOUT_INIT_005ms;
+
+   // Simple loop timeout...
+   while (++Timeout_loop != 0);
+   }
+/*------------------------------------------------------------------*/
+void Delay_10ms(void)
+   {
+   Timeout_loop = LOOP_TIMEOUT_INIT_010ms;
+
+   // Simple loop timeout...
+   while (++Timeout_loop != 0);
+   }
+/*------------------------------------------------------------------*/
+void Delay_50ms(void)
+   {
+   Timeout_loop = LOOP_TIMEOUT_INIT_050ms;
+
+   // Simple loop timeout...
+   while (++Timeout_loop != 0);
+   }
+
+/*------------------------------------------------------------------*/
+void Delay_500ms(void)
+   {
+   Timeout_loop = LOOP_TIMEOUT_INIT_500ms;
+
+   // Simple loop timeout...
+   while (++Timeout_loop != 0);
+   }
+
 /*---------------------------------------------------
 	Delay()
 	ÑÓ³Ù³ÌÐò
@@ -91,6 +135,7 @@ void Magnet_Delay(tWord x, y)
 			}
 		}
 	}
+
 
 /*---------------------------------------------------
 	end of file

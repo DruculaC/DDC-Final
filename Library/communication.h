@@ -9,18 +9,13 @@
 
 //-----public constants--------------------------------
 // ¶¨ÒåIDcardµÄÃÜÂë
-#define IDkey0 0x00
-#define IDkey1 0x00
-#define IDkey2 0x00
-#define IDkey3 0x13
-#define IDkey4 0xEC
-/*
-#define IDkey6 0x00
-#define IDkey7 0x00
-#define IDkey8 0x00
-#define IDkey9 0x13
-#define IDkey10 0x22
-*/
+#define IDkey0 0x12
+#define IDkey1 0x34
+#define IDkey2 0x56
+#define IDkey3 0x78
+#define IDkey4 0x90
+#define IDkey5 0x98
+
 #define CmdHead 0xc8
 #define MyAddress 0xe0
 

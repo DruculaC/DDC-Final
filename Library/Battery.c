@@ -10,6 +10,19 @@
 #include "Battery.h"
 #include "voice.h"
 #include "Delay.h"
+#include "AD.h"
+
+extern tWord ADC_check_result;		
+
+/*----------------------------------------------------
+	CheckADC() - Z2
+	Check P20's voltage.
+-----------------------------------------------------*/
+void CheckADC(void)
+	{
+	// detect the battery voltage
+	ADC_check_result = GetADCResult(6);
+	}
 
                                                          
 /*----------------------------------------------------

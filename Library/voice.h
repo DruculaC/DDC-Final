@@ -41,6 +41,7 @@ void wire_broken_speech(void);
 void lock_rotated_on_speech(void);
 void lock_rotated_off_speech(void);
 void ID_speech(void);
+void Self_learn_speech(void);
 
 
 

@@ -39,6 +39,7 @@ void  SCH_Dispatch_Tasks(void);
 tByte SCH_Add_Task(void (code*) (void), const tWord, const tWord);  
 bit   SCH_Delete_Task(const tByte);
 void  SCH_Report_Status(void);
+void SCH_Delete_Program(void (code * pProgram)());
 
 // ------ Public constants -----------------------------------------
 

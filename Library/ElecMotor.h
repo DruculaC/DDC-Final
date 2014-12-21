@@ -1,18 +1,19 @@
 /*-----------------------------------------------------
-	Battery.h (v1.00)
+	ElecMotor.h (v1.00)
 	
-	header file for Battery.c
+	Header file for ElecMotor.c
 -----------------------------------------------------*/
 
-#ifndef _BATTERY_H
-#define _BATTERY_H
+#ifndef _ElecMotor_H
+#define _ElecMotor_H
 
 //-----public constants-------------------------------
 
 //-----public function prototype----------------------
-
-void verifybattery(tWord Check2);
-void CheckADC(void);
+void ElecMotor_CW(void);
+void ElecMotor_ACW(void);
+void ElecMotor_code(void);	
+void ElecMotor_Delay(void);
 
 #endif
 											

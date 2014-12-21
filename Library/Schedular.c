@@ -60,9 +60,10 @@ void SCH_Dispatch_Tasks(void)
       {
       if (SCH_tasks_G[Index].RunMe > 0) 
          {
+         SCH_tasks_G[Index].RunMe -= 1;   // Reset / reduce RunMe flag
+
          (*SCH_tasks_G[Index].pTask)();  // Run the task
 
-         SCH_tasks_G[Index].RunMe -= 1;   // Reset / reduce RunMe flag
 
          // Periodic tasks will automatically run again
          // - if this is a 'one shot' task, remove it from the array
@@ -155,7 +156,7 @@ tByte SCH_Add_Task(void (code * pFunction)(),
    SCH_tasks_G[Index].Delay  = DELAY;
    SCH_tasks_G[Index].Period = PERIOD;
 
-   SCH_tasks_G[Index].RunMe  = 0;
+   SCH_tasks_G[Index].RunMe  = 1;
 
    return Index; // return position of task (to allow later deletion)
    }
@@ -185,11 +186,11 @@ bit SCH_Delete_Task(const tByte TASK_INDEX)
       Error_code_G = ERROR_SCH_CANNOT_DELETE_TASK;
 
       // ...also return an error code
-      Return_code = RETURN_ERROR;
+//      Return_code = RETURN_ERROR;
       }
    else
       {
-      Return_code = RETURN_NORMAL;
+//      Return_code = RETURN_NORMAL;
       }      
    
    SCH_tasks_G[TASK_INDEX].pTask   = 0x0000;
@@ -200,6 +201,28 @@ bit SCH_Delete_Task(const tByte TASK_INDEX)
 
    return Return_code;       // return status
    }
+
+
+/*------------------------------------------------------------------
+	SCH_Delete_Program()
+	删除某一个其他任务
+-------------------------------------------------------------------*/
+void SCH_Delete_Program(void (code * pProgram)())
+	{
+	tByte Program_INDEX = 0;
+	
+   for (Program_INDEX = 0; Program_INDEX < SCH_MAX_TASKS; Program_INDEX++)
+		{
+		if(SCH_tasks_G[Program_INDEX].pTask == pProgram)
+			{
+			SCH_tasks_G[Program_INDEX].pTask   = 0x0000;
+			SCH_tasks_G[Program_INDEX].Delay   = 0;
+			SCH_tasks_G[Program_INDEX].Period  = 0;
+
+			SCH_tasks_G[Program_INDEX].RunMe   = 0;
+			}
+		}
+	}
 
 
 /*------------------------------------------------------------------*-

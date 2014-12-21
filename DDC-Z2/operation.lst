@@ -1,16 +1,16 @@
-C51 COMPILER V9.51   OPERATION                                                             12/17/2014 14:17:41 PAGE 1   
+C51 COMPILER V9.51   OPERATION                                                             12/21/2014 14:52:17 PAGE 1   
 
 
 C51 COMPILER V9.51, COMPILATION OF MODULE OPERATION
 OBJECT MODULE PLACED IN .\operation.obj
 COMPILER INVOKED BY: D:\Program Files (x86)\keil\C51\BIN\C51.EXE ..\Library\operation.c COMPACT BROWSE INCDIR(..\Library
-                    -) DEBUG OBJECTEXTEND PRINT(.\operation.lst) OBJECT(.\operation.obj)
+                    -) DEBUG OBJECTEXTEND PRINT(.\operation.lst) TABS(3) OBJECT(.\operation.obj)
 
 line level    source
 
    1          /*-------------------------------------------------------------
-   2                  operation.c
-   3                  各类操作程序
+   2             operation.c
+   3             各类操作程序
    4          --------------------------------------------------------------*/
    5          
    6          #include "main.h"
@@ -21,84 +21,101 @@ line level    source
   11          #include "voice.h"
   12          #include "battery.h"
   13          #include "delay.h"
-  14          
-  15          /*------ private variable --------------------------*/
-  16          bit enable_sensor_delayEN = 0;          // 延迟使能传感器的使能，不能即时使能传感器，需要过一段时间             
-  17          
-  18          /*------- Public variable declarations --------------------------*/
-  19          extern bit position_sensor_EN;          
-  20          extern bit fell_flag;                                           
-  21          extern bit raised_flag;                         
-  22          extern tByte sensor_trigger_count;      
-  23          extern tByte sensor_1ststage_count;     
-  24          extern bit raised_fell_once_flag;                       
-  25          extern bit raised_fell_flag;                                    
-  26          extern bit host_stolen_alarm1_EN;     
-  27          extern bit host_stolen_alarm2_EN;      
-  28          extern tByte host_stolen_alarm1_count;          
-  29          extern tByte host_stolen_alarm2_count;          
-  30          extern bit stolen_alarm_flag;                                   
-  31          extern tWord sensor_3rdstage_time;                      
-  32          extern tByte sensor_3rdstage_effcount;          
-  33          extern tByte sensor_3rdstage_count;                     
-  34          extern tWord sensor_3rdstage_interval;          
-  35          extern tWord sensor_2ndstage_time;              
-  36          extern tByte sensor_2ndstage_count;             
-  37          extern tWord ADC_check_result;          
-  38          extern tByte wire_broken_count;         
-  39          extern bit wire_broken_flag;                    
-  40          extern bit battery_stolen_EN;                   
-  41          extern tByte battery_stolen_count;
-  42          extern bit sensor_3rdalarm_flag;
-  43          extern tByte enable_sensor_delay_count;         
-  44          extern bit Silence_Flag;
-  45          /*-----------------------------------------
-  46                  slave_away_operation()
-  47                  
-  48                  operation for slave is away
-  49          ------------------------------------------*/
-  50          void slave_away_operation(void)
-  51                  {
-  52   1              if(Silence_Flag == 0)
-  53   1                      // speech for slave away
-  54   1                      close_lock_speech();    
-C51 COMPILER V9.51   OPERATION                                                             12/17/2014 14:17:41 PAGE 2   
+  14          #include "ElecMotor.h"
+  15          
+  16          /*------ private variable --------------------------*/
+  17          bit enable_sensor_delayEN = 0;      // 延迟使能传感器的使能，不能即时使能传感器，需要过一段时间    
+  18          
+  19          /*------- Public variable declarations --------------------------*/
+  20          extern bit position_sensor_EN;   
+  21          extern bit fell_flag;                  
+  22          extern bit raised_flag;          
+  23          extern tByte sensor_trigger_count;  
+  24          extern tByte sensor_1ststage_count; 
+  25          extern bit raised_fell_once_flag;         
+  26          extern bit raised_fell_flag;              
+  27          extern bit host_stolen_alarm1_EN;     
+  28          extern bit host_stolen_alarm2_EN;      
+  29          extern tByte host_stolen_alarm1_count;    
+  30          extern tByte host_stolen_alarm2_count;    
+  31          extern bit stolen_alarm_flag;             
+  32          extern tWord sensor_3rdstage_time;        
+  33          extern tByte sensor_3rdstage_effcount;    
+  34          extern tByte sensor_3rdstage_count;       
+  35          extern tWord sensor_3rdstage_interval;    
+  36          extern tWord sensor_2ndstage_time;     
+  37          extern tByte sensor_2ndstage_count;    
+  38          extern tWord ADC_check_result;      
+  39          extern tByte wire_broken_count;     
+  40          extern bit wire_broken_flag;        
+  41          extern bit battery_stolen_EN;       
+  42          extern tByte battery_stolen_count;
+  43          extern bit sensor_3rdalarm_flag;
+  44          extern tByte enable_sensor_delay_count;      
+  45          extern bit Silence_Flag;
+  46          extern tByte key_rotated_on_flag;      
+  47          extern tByte IDkey_certificated_times;
+  48          
+  49          /*-----------------------------------------
+  50             slave_away_operation()
+  51             
+  52             operation for slave is away
+  53          ------------------------------------------*/
+  54          void slave_away_operation(void)
+C51 COMPILER V9.51   OPERATION                                                             12/21/2014 14:52:17 PAGE 2   
 
-  55   1              
-  56   1              // enable_sensor();     
-  57   1              enable_sensor_delayEN = 1;
-  58   1              enable_sensor_delay_count = 0;
-  59   1              // delay time, avoid sensor trigger on.
-  60   1              Delay(20);
-  61   1              }
-  62          
-  63          /*----------------------------------------------------------------------
-  64                          slave_nearby_operation()
-  65                          operation for slave is nearby
-  66          ----------------------------------------------------------------------*/
-  67          void slave_nearby_operation(void)
-  68                  {
-  69   1      
-  70   1          if(Silence_Flag == 0)
-  71   1                      {
-  72   2                      // speech for slave nearby
-  73   2                      open_lock_speech();
-  74   2                      // handle with battery status 
-  75   2                      verifybattery(ADC_check_result);                                        
-  76   2                      // rotate on speech
-  77   2                      key_rotate_on_speech();         
-  78   2                      }
-  79   1              
-  80   1              disable_sensor();
-  81   1              }
-  82                  
-  83          /*---------------------------------------------------
-  84                  end of file
-  85          ----------------------------------------------------*/
+  55             {
+  56   1         // handle with battery status
+  57   1         if(Silence_Flag == 0)
+  58   1            verifybattery(ADC_check_result);
+  59   1         
+  60   1         // turn off the magnet 
+  61   1         ElecMotor_ACW();
+  62   1         
+  63   1         if(Silence_Flag == 0)
+  64   1            // speech for slave away
+  65   1            close_lock_speech(); 
+  66   1         
+  67   1         // enable_sensor();  
+  68   1         enable_sensor_delayEN = 1;
+  69   1         enable_sensor_delay_count = 0;
+  70   1         // delay time, avoid sensor trigger on.
+  71   1         Delay(20);
+  72   1         IDkey_certificated_times = 0;
+  73   1      
+  74   1         if(Silence_Flag == 1)
+  75   1            Silence_Flag = 0;
+  76   1      
+  77   1         }
+  78          
+  79          /*----------------------------------------------------------------------
+  80                slave_nearby_operation()
+  81                operation for slave is nearby
+  82          ----------------------------------------------------------------------*/
+  83          void slave_nearby_operation(void)
+  84             {
+  85   1      
+  86   1          if(Silence_Flag == 0)
+  87   1            {
+  88   2            // speech for slave nearby
+  89   2            open_lock_speech();
+  90   2            // handle with battery status 
+  91   2            verifybattery(ADC_check_result);             
+  92   2            // rotate on speech
+  93   2            key_rotate_on_speech();    
+  94   2            }
+  95   1         // flag key rotation status
+  96   1         key_rotated_on_flag = 1;
+  97   1      
+  98   1         }
+  99             
+ 100          /*---------------------------------------------------
+ 101             end of file
+ 102          ----------------------------------------------------*/
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =     39    ----
+   CODE SIZE        =     68    ----
    CONSTANT SIZE    =   ----    ----
    XDATA SIZE       =   ----    ----
    PDATA SIZE       =   ----    ----

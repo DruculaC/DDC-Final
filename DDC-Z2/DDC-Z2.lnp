@@ -9,6 +9,8 @@
 ".\Timer.obj",
 ".\UART.obj",
 ".\voice.obj",
-".\ISP_DataFlash.obj" 
+".\ISP_DataFlash.obj",
+".\ElecMotor.obj",
+".\Schedular.obj" 
 TO "DDC-Z2" 
 RAMSIZE(256) 

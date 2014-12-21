@@ -11,6 +11,7 @@
 #include "voice.h"
 #include "battery.h"
 #include "delay.h"
+#include "ElecMotor.h"
 
 /*------ private variable --------------------------*/
 bit enable_sensor_delayEN = 0;		// 延迟使能传感器的使能，不能即时使能传感器，需要过一段时间		
@@ -42,6 +43,9 @@ extern tByte battery_stolen_count;
 extern bit sensor_3rdalarm_flag;
 extern tByte enable_sensor_delay_count;		
 extern bit Silence_Flag;
+extern tByte key_rotated_on_flag;		
+extern tByte IDkey_certificated_times;
+
 /*-----------------------------------------
 	slave_away_operation()
 	
@@ -49,6 +53,13 @@ extern bit Silence_Flag;
 ------------------------------------------*/
 void slave_away_operation(void)
 	{
+	// handle with battery status
+	if(Silence_Flag == 0)
+		verifybattery(ADC_check_result);
+	
+	// turn off the magnet 
+	ElecMotor_ACW();
+	
 	if(Silence_Flag == 0)
 		// speech for slave away
 		close_lock_speech();	
@@ -58,6 +69,11 @@ void slave_away_operation(void)
 	enable_sensor_delay_count = 0;
 	// delay time, avoid sensor trigger on.
 	Delay(20);
+	IDkey_certificated_times = 0;
+
+	if(Silence_Flag == 1)
+		Silence_Flag = 0;
+
 	}
 
 /*----------------------------------------------------------------------
@@ -76,8 +92,9 @@ void slave_nearby_operation(void)
 		// rotate on speech
 		key_rotate_on_speech();		
 		}
-	
-	disable_sensor();
+	// flag key rotation status
+	key_rotated_on_flag = 1;
+
 	}
 	
 /*---------------------------------------------------

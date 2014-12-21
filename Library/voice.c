@@ -12,6 +12,8 @@
 
 /*------ private variable --------------------------*/
 tByte key_rotate_on_speech_number = 1;		// 循环报两段开机语音
+
+extern bit flashing_flag;
    
 /*--------------------------------------------------
 	SC_Speech()
@@ -116,8 +118,22 @@ void ID_speech(void)
 	{
 	voice_EN = 1;
 	SC_Speech(6);  
-	Delay(2);
+	Delay_10ms();
+	Delay_10ms();
+	Delay_10ms();
 	voice_EN = 0;
+	}
+
+/*----------------------------------------------------
+	Self_learn_speech()
+	第一次碰主机，会有一句提示语音
+--------------------------------------------------------*/
+void Self_learn_speech(void)
+	{
+	ID_speech();
+	Delay(10);
+	ID_speech();
+	flashing_flag = 0;
 	}
 
 /*----------------------------------------------------
