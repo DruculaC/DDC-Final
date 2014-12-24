@@ -21,12 +21,14 @@ extern bit flashing_flag;
 ---------------------------------------------------*/
 void SC_Speech(tByte cnt)
 	{
-	tByte i;
+	tByte ii;
 	SC_RST = 0;
-	delay_ms(100);
+//	delay_ms(100);
+	Delay_50ms();
 	SC_RST = 1;
-	delay_ms(150);
-	for(i=0; i < cnt; i++)
+//	delay_ms(150);
+	Delay_50ms();
+	for(ii=0; ii < cnt; ii++)
 		{
 		SC_DATA = 1; 
 		delay_us(20);

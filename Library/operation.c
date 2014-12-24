@@ -45,6 +45,7 @@ extern tByte enable_sensor_delay_count;
 extern bit Silence_Flag;
 extern tByte key_rotated_on_flag;		
 extern tByte IDkey_certificated_times;
+extern bit novoice_flag_Poweron;
 
 /*-----------------------------------------
 	slave_away_operation()
@@ -54,7 +55,7 @@ extern tByte IDkey_certificated_times;
 void slave_away_operation(void)
 	{
 	// handle with battery status
-	if(Silence_Flag == 0)
+	if((Silence_Flag == 0)&&(novoice_flag_Poweron == 0))
 		verifybattery(ADC_check_result);
 	
 	// turn off the magnet 
@@ -73,6 +74,7 @@ void slave_away_operation(void)
 
 	if(Silence_Flag == 1)
 		Silence_Flag = 0;
+		
 
 	}
 
@@ -87,13 +89,16 @@ void slave_nearby_operation(void)
 		{
 		// speech for slave nearby
 		open_lock_speech();
-		// handle with battery status 
-		verifybattery(ADC_check_result);					
+		
+		if(novoice_flag_Poweron == 0)
+			// handle with battery status 
+			verifybattery(ADC_check_result);					
 		// rotate on speech
 		key_rotate_on_speech();		
 		}
 	// flag key rotation status
 	key_rotated_on_flag = 1;
+   novoice_flag_Poweron = 0;
 
 	}
 	

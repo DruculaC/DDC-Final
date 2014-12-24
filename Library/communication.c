@@ -104,7 +104,7 @@ void ComMode_Data(tByte ComMode, x)
 	myTxRxData[2] = ComMode;
 
 	initsignal();
-    Send_Data(x);
+   Send_Data(x);
 	
 	transmiter_EN = 1;
 	receiver_EN = 0;
@@ -126,7 +126,7 @@ void ComMode_Data_WX(tByte ComMode, x)
 	myTxRxData[2] = ComMode;
 
 	initsignal();
-    Send_Data(x);
+   Send_Data(x);
 	
 	transmiter_EN = 0;
 	receiver_EN = 0;

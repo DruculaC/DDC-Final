@@ -67,7 +67,6 @@ tWord horizontal_vibration_count = 0;	//垂直传感器触发后，对时间进行计数。
 bit vibration_flag = 0;
 tWord vibration_count = 0;
 bit wire_broken_flag = 0;			// 剪断锁线的标志位
-extern tByte IDkey5;		// 由前5位密码组成的异或
 bit IDkey_flag = 0;			// 当ID卡靠近时认证通过后置1，
 tByte IDkey_count = 0;		// ID卡认证通过后，计时1分钟，使钥匙能转动。
 bit sensor_EN = 0;

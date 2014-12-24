@@ -1,4 +1,4 @@
-C51 COMPILER V9.51   SCHEDULAR                                                             12/21/2014 14:52:17 PAGE 1   
+C51 COMPILER V9.51   SCHEDULAR                                                             12/23/2014 11:16:06 PAGE 1   
 
 
 C51 COMPILER V9.51, COMPILATION OF MODULE SCHEDULAR
@@ -62,7 +62,7 @@ line level    source
   52          
   53          -*------------------------------------------------------------------*/
   54          void SCH_Dispatch_Tasks(void) 
-C51 COMPILER V9.51   SCHEDULAR                                                             12/21/2014 14:52:17 PAGE 2   
+C51 COMPILER V9.51   SCHEDULAR                                                             12/23/2014 11:16:06 PAGE 2   
 
   55             {
   56   1         tByte Index;
@@ -126,7 +126,7 @@ line level    source
  114            to be subsequently deleted - see SCH_Delete_Task().
  115          
  116            EXAMPLES:
-C51 COMPILER V9.51   SCHEDULAR                                                             12/21/2014 14:52:17 PAGE 3   
+C51 COMPILER V9.51   SCHEDULAR                                                             12/23/2014 11:16:06 PAGE 3   
 
  117          
  118            Task_ID = SCH_Add_Task(Do_X,1000,0);
@@ -190,7 +190,7 @@ line level    source
  176          -*------------------------------------------------------------------*/
  177          bit SCH_Delete_Task(const tByte TASK_INDEX) 
  178             {
-C51 COMPILER V9.51   SCHEDULAR                                                             12/21/2014 14:52:17 PAGE 4   
+C51 COMPILER V9.51   SCHEDULAR                                                             12/23/2014 11:16:06 PAGE 4   
 
  179   1         bit Return_code;
  180   1      
@@ -254,7 +254,7 @@ line level    source
  238            (60000 ticks = 1 minute at 1ms tick interval).
  239            After this the the error code is reset to 0. 
  240          
-C51 COMPILER V9.51   SCHEDULAR                                                             12/21/2014 14:52:17 PAGE 5   
+C51 COMPILER V9.51   SCHEDULAR                                                             12/23/2014 11:16:06 PAGE 5   
 
  241            This code may be easily adapted to display the last
  242            error 'for ever': this may be appropriate in your
@@ -318,7 +318,7 @@ line level    source
  300            *** May wish to disable this if using a watchdog ***
  301          
  302            *** ADAPT AS REQUIRED FOR YOUR HARDWARE ***
-C51 COMPILER V9.51   SCHEDULAR                                                             12/21/2014 14:52:17 PAGE 6   
+C51 COMPILER V9.51   SCHEDULAR                                                             12/23/2014 11:16:06 PAGE 6   
 
  303          
  304          -*------------------------------------------------------------------*/

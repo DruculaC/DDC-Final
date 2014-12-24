@@ -63,7 +63,6 @@ tWord horizontal_vibration_count = 0;	//垂直传感器触发后，对时间进行计数。
 bit vibration_flag = 0;
 tWord vibration_count = 0;
 bit wire_broken_flag = 0;			// 剪断锁线的标志位
-extern tByte IDkey5;		// 由前5位密码组成的异或
 bit IDkey_flag = 0;			// 当ID卡靠近时认证通过后置1，
 tByte IDkey_count = 0;		// ID卡认证通过后，计时1分钟，使钥匙能转动。
 bit sensor_EN = 0;
@@ -97,7 +96,7 @@ void main(void)
 	{
 	noVoice();
 	InitTimer(50, 100);
-    TR0 = 1;
+   TR0 = 1;
 
 	// 键盘中断初始化
 	press_open_button = 1;
@@ -123,7 +122,7 @@ void main(void)
 
 	transceiver_power_enable = 1;         // 上电时无线模块电源关闭
 	
-	ComMode_Data(ComMode_8, 27);
+	ComMode_Data(ComMode_8, 13);
 
 	while(1)
 		{				
@@ -131,7 +130,7 @@ void main(void)
 			{
 			EKB = 1;
 			idle_EN = 0;
-			PCON |= 0x02;			
+//			PCON |= 0x02;			
 			}
 		
 //		sEOS_Go_To_Sleep();			
@@ -179,14 +178,14 @@ void timer0() interrupt interrupt_timer_0_overflow
 		{
 		transceiver_power_enable = 0;
 		RXD = 1;
-		ComMode_Data(ComMode_7, 27);		
+		ComMode_Data(ComMode_7, 13);		
 		}
 	
 	if(press_close_button == 0)
 		{
 		transceiver_power_enable = 0;
 		RXD = 1;
-		ComMode_Data(ComMode_8, 27);
+		ComMode_Data(ComMode_8, 13);
 		}
 
 	if(toggle_button == 1)
@@ -281,7 +280,7 @@ void timerT1() interrupt interrupt_timer_1_overflow
 			case ComMode_1://接收到的是主机发送过来的编码1的信号，说明主机在3M内，是正常的
 				{	
 				Moto_Vibration();
-				ComMode_Data(ComMode_1, 42);
+				ComMode_Data(ComMode_1, 21);
 				}
 			break;
 			

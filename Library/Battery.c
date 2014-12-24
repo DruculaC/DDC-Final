@@ -31,48 +31,48 @@ void CheckADC(void)
 -----------------------------------------------------*/
 void verifybattery(tWord Check2)
 	{	
-	// battery is sufficient, battery > 50.4V, 3.68V/4.9V
-	if((Check2 >= 0x301))
+	// battery is sufficient, battery > 50.5V, 3.72V/4.93V
+	if((Check2 >= 0x304))
 		{
 		voice_EN = 1;
 		SC_Speech(28);  	
 		Delay(60);
 		voice_EN = 0;
 		}
-   // 20km, 49V < battery < 50.4V, 3.62V/4.9V
-	else if((Check2 < 0x301)&&(Check2 >= 0x2f4))		
+   // 20km, 49.5V < battery < 50.5V, 3.68V/4.93V
+	else if((Check2 < 0x304)&&(Check2 >= 0x2fc))		
 		{
 		voice_EN = 1;
 		SC_Speech(10);  
 		Delay(100);
 		voice_EN = 0;
 		}
-	// 15km, 47.4V < battery < 49V, 3.55V/4.9V 
-	else if((Check2 < 0x2f4)&&(Check2 >= 0x2e5))		
+	// 15km, 48.8V < battery < 49.5V, 3.65V/4.93V 
+	else if((Check2 < 0x2fc)&&(Check2 >= 0x2f6))		
 		{
 		voice_EN = 1;
 		SC_Speech(9);  	
 		Delay(100);
 		voice_EN = 0;
 		}
-	// 10km, 46.4V < battery <47.4V, 3.50V/4.9V
-	else if((Check2 < 0x2e5)&&(Check2 >= 0x2db))		
+	// 10km, 48V < battery <48.8V, 3.61V/4.9V
+	else if((Check2 < 0x2f6)&&(Check2 >= 0x2ed))		
 		{
 		voice_EN = 1;
 		SC_Speech(8);  	
 		Delay(100);
 		voice_EN = 0;
 		}
-	// 5km, 45.7V < battery < 46.4V, 3.45V/4.9V
-	else if((Check2 < 0x2db)&&(Check2 >= 0x2d0))		
+	// 5km, 46.8V < battery < 48V, 3.55V/4.9V
+	else if((Check2 < 0x2ed)&&(Check2 >= 0x2e1))		
 		{
 		voice_EN =1;
 		SC_Speech(7);  	
 		Delay(100);
 		voice_EN = 0;
 		}                     
-	// battery is low, battery < 45.7V, 
-	else if(Check2 < 0x2d0)
+	// battery is low, battery < 46.8V, 
+	else if(Check2 < 0x2e1)
 		{
 		motorBAT_low_speech();
 		}

@@ -102,6 +102,8 @@ bit IDkey_flash_EN = 0;
 tByte IDkey_certificated_times = 0;
 bit Silence_Flag = 0;
 bit flashing_flag = 0;
+bit novoice_flag_Poweron = 1;
+
 
 /*------- Private variable declarations --------------------------*/
 
@@ -158,7 +160,8 @@ void main()
 			stolen_alarm_flag = 1;
 			if(key_rotate == 0)
 				{
-				SCH_Add_Task(stolen_alarm_speech1, 0, 0);
+//				SCH_Add_Task(stolen_alarm_speech1, 0, 0);
+				stolen_alarm_speech1();
 				}
 			if(++host_stolen_alarm1_count >= 4)
 				{
@@ -173,7 +176,8 @@ void main()
 			stolen_alarm_flag = 1;
 			if(key_rotate == 0)
 				{
-				SCH_Add_Task(stolen_alarm_speech2, 0, 0);
+//				SCH_Add_Task(stolen_alarm_speech2, 0, 0);
+				stolen_alarm_speech2();
 				}
 			if(++host_stolen_alarm2_count >= 4)
 				{
@@ -204,8 +208,8 @@ void timer0() interrupt interrupt_timer_0_overflow
 		timer0_count=0;
 		
 		// Check Battery's voltage
-		if(motor_lock == 0)
-			SCH_Add_Task(CheckADC, 0, 0);
+//			SCH_Add_Task(CheckADC, 0, 0);
+		CheckADC();
 		
 		if(IDkey_flag == 1)
 			{
@@ -314,7 +318,8 @@ void timer0() interrupt interrupt_timer_0_overflow
 		IDkey_selflearn_flag5 = 0;
 		IDkey_selflearn_flag6 = 0;
 		SCH_Add_Task(Self_learn_programming, 0, 0);
-		SCH_Add_Task(Self_learn_speech, 0, 0);
+//		SCH_Add_Task(Self_learn_speech, 0, 0);
+		Self_learn_speech();
 		}
 	
 	// detect whether key is rotated on,  
@@ -330,9 +335,10 @@ void timer0() interrupt interrupt_timer_0_overflow
 			IDkey_flag = 0;
 			IDkey_certificated_times = 0;
 
-			SCH_Add_Task(ElecMotor_CW, 0, 0);
-
-			SCH_Add_Task(slave_nearby_operation, 0, 0);
+//			SCH_Add_Task(ElecMotor_CW, 0, 0);
+			ElecMotor_CW();
+         slave_nearby_operation();
+//			SCH_Add_Task(slave_nearby_operation, 0, 0);
 			}
 		} 		
 				
@@ -346,8 +352,8 @@ void timer0() interrupt interrupt_timer_0_overflow
 				{
 				// reset key rotation flag
 				key_rotated_on_flag=0;
-				SCH_Add_Task(slave_away_operation, 0, 0);
-									
+//				SCH_Add_Task(slave_away_operation, 0, 0);
+				slave_away_operation();					
 				}				
 			}
 		}
@@ -628,27 +634,27 @@ void uart_isr() interrupt 4
 		if(IDkey_selflearn_flag6 == 0)
 			{
 			// judge whether buffer[0] is CmdHead
-			if((data_count == 0) && (received_data_buffer[0] == IDkey0))
+			if((data_count == 0) && (received_data_buffer[0] == IDkey6))
 				{
 				data_count = 1;
 				}
-			else if((data_count == 1) && (received_data_buffer[1] == IDkey1))
+			else if((data_count == 1) && (received_data_buffer[1] == IDkey7))
 				{
 				data_count = 2;
 				}
-			else if((data_count == 2) && (received_data_buffer[2] == IDkey2))
+			else if((data_count == 2) && (received_data_buffer[2] == IDkey8))
 				{
 				data_count = 3;
 				}
-			else if((data_count == 3) && (received_data_buffer[3] == IDkey3))
+			else if((data_count == 3) && (received_data_buffer[3] == IDkey9))
 				{
 				data_count = 4;
 				}
-			else if((data_count == 4) && (received_data_buffer[4] == IDkey4))
+			else if((data_count == 4) && (received_data_buffer[4] == IDkey10))
 				{
 				data_count = 5;
 				}
-			else if((data_count == 5) && (received_data_buffer[5] == IDkey5))
+			else if((data_count == 5) && (received_data_buffer[5] == IDkey11))
 				{
 				data_count = 0;	
 				IDkey_flag = 1;

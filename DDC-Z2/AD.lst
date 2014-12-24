@@ -1,4 +1,4 @@
-C51 COMPILER V9.51   AD                                                                    12/21/2014 14:52:16 PAGE 1   
+C51 COMPILER V9.51   AD                                                                    12/23/2014 11:16:05 PAGE 1   
 
 
 C51 COMPILER V9.51, COMPILATION OF MODULE AD
@@ -62,7 +62,7 @@ line level    source
   52   2            AADR0 = 1;
   53   2            AADR1 = 0;
   54   2            AADR2 = 1;
-C51 COMPILER V9.51   AD                                                                    12/21/2014 14:52:16 PAGE 2   
+C51 COMPILER V9.51   AD                                                                    12/23/2014 11:16:05 PAGE 2   
 
   55   2                                                                           
   56   2            ADCCON1 |= 0x80;                                      

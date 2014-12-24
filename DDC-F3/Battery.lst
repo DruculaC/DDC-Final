@@ -1,18 +1,18 @@
-C51 COMPILER V9.51   BATTERY                                                               11/14/2014 13:39:24 PAGE 1   
+C51 COMPILER V9.51   BATTERY                                                               12/22/2014 11:22:25 PAGE 1   
 
 
 C51 COMPILER V9.51, COMPILATION OF MODULE BATTERY
 OBJECT MODULE PLACED IN .\Battery.obj
-COMPILER INVOKED BY: D:\Program Files (x86)\keil\C51\BIN\C51.EXE ..\Library\Battery.c ROM(COMPACT) BROWSE INCDIR(..\Libr
-                    -ary) DEBUG OBJECTEXTEND PRINT(.\Battery.lst) OBJECT(.\Battery.obj)
+COMPILER INVOKED BY: D:\Program Files (x86)\keil\C51\BIN\C51.EXE ..\Library\Battery.c COMPACT ROM(COMPACT) BROWSE INCDIR
+                    -(..\Library) DEBUG OBJECTEXTEND PRINT(.\Battery.lst) TABS(3) OBJECT(.\Battery.obj)
 
 line level    source
 
    1          /*---------------------------------------------------
-   2                  Battery.c (v1.00)
-   3                  
-   4                  电池电量判断
-   5          ---------------------------------------------------*/   
+   2             Battery.c (v1.00)
+   3             
+   4             电池电量判断
+   5          ---------------------------------------------------*/ 
    6          
    7          #include "main.h"
    8          #include "port.h"
@@ -20,127 +20,140 @@ line level    source
   10          #include "Battery.h"
   11          #include "voice.h"
   12          #include "Delay.h"
-  13          
-  14                                                                   
-  15          /*----------------------------------------------------
-  16                  verifybattery() - Z2
-  17                  voice alarm for battery status without power module
-  18          void verifybattery(tWord Check2)
-  19                  {       
-  20                  // battery is sufficient, battery > 50.4V, 3.68V/4.9V
-  21                  if((Check2 >= 0x301))
-  22                          {
-  23                          voice_EN = 1;
-  24                          SC_Speech(28);          
-  25                          Delay(60);
-  26                          voice_EN = 0;
-  27                          }
-  28             // 20km, 49V < battery < 50.4V, 3.62V/4.9V
-  29                  else if((Check2 < 0x301)&&(Check2 >= 0x2f4))            
-  30                          {
-  31                          voice_EN = 1;
-  32                          SC_Speech(10);  
-  33                          Delay(100);
-  34                          voice_EN = 0;
-  35                          }
-  36                  // 15km, 47.4V < battery < 49V, 3.55V/4.9V 
-  37                  else if((Check2 < 0x2f4)&&(Check2 >= 0x2e5))            
-  38                          {
-  39                          voice_EN = 1;
-  40                          SC_Speech(9);   
-  41                          Delay(100);
-  42                          voice_EN = 0;
-  43                          }
-  44                  // 10km, 45.7V < battery <47.4V, 3.47V/4.9V
-  45                  else if((Check2 < 0x2e5)&&(Check2 >= 0x2d5))            
-  46                          {
-  47                          voice_EN = 1;
-  48                          SC_Speech(8);   
-  49                          Delay(100);
-  50                          voice_EN = 0;
-  51                          }
-  52                  // 5km, 44.4V < battery < 45.7V, 3.41V/4.9V
-  53                  else if((Check2 < 0x2d5)&&(Check2 >= 0x2c8))            
-  54                          {
-C51 COMPILER V9.51   BATTERY                                                               11/14/2014 13:39:24 PAGE 2   
+  13          #include "AD.h"
+  14          
+  15          extern tWord ADC_check_result;      
+  16          
+  17          /*----------------------------------------------------
+  18             CheckADC() - Z2
+  19             Check P20's voltage.
+  20          -----------------------------------------------------*/
+  21          void CheckADC(void)
+  22             {
+  23   1         // detect the battery voltage
+  24   1         ADC_check_result = GetADCResult(6);
+  25   1         }
+  26          
+  27                                                                   
+  28          /*----------------------------------------------------
+  29             verifybattery() - Z2
+  30             voice alarm for battery status without power module
+  31          -----------------------------------------------------*/
+  32          void verifybattery(tWord Check2)
+  33             {  
+  34   1         // battery is sufficient, battery > 50.4V, 3.68V/4.9V
+  35   1         if((Check2 >= 0x301))
+  36   1            {
+  37   2            voice_EN = 1;
+  38   2            SC_Speech(28);    
+  39   2            Delay(60);
+  40   2            voice_EN = 0;
+  41   2            }
+  42   1         // 20km, 49V < battery < 50.4V, 3.62V/4.9V
+  43   1         else if((Check2 < 0x301)&&(Check2 >= 0x2f4))    
+  44   1            {
+  45   2            voice_EN = 1;
+  46   2            SC_Speech(10);  
+  47   2            Delay(100);
+  48   2            voice_EN = 0;
+  49   2            }
+  50   1         // 15km, 47.4V < battery < 49V, 3.55V/4.9V 
+  51   1         else if((Check2 < 0x2f4)&&(Check2 >= 0x2e5))    
+  52   1            {
+  53   2            voice_EN = 1;
+  54   2            SC_Speech(9);     
+C51 COMPILER V9.51   BATTERY                                                               12/22/2014 11:22:25 PAGE 2   
 
-  55                          voice_EN =1;
-  56                          SC_Speech(7);   
-  57                          Delay(100);
-  58                          voice_EN = 0;
-  59                          }                     
-  60                  // battery is low, battery < 44.4V, 
-  61                  else if(Check2 < 0x2c8)
-  62                          {
-  63                          motorBAT_low_speech();
-  64                          }
-  65                  }
-  66          -----------------------------------------------------*/
-  67          /*----------------------------------------------------
-  68                  verifybattery()  - Z4
-  69                  voice alarm for battery status with power module
-  70          -----------------------------------------------------*/
-  71          void verifybattery(tWord Check2)
-  72                  {       
-  73   1              // battery is sufficient, battery > 50.4V, 2.48V/5V
-  74   1              if((Check2 >= 0x1fb))
-  75   1                      {
-  76   2                      voice_EN = 1;
-  77   2                      SC_Speech(28);          
-  78   2                      Delay(60);
-  79   2                      voice_EN = 0;
-  80   2                      }
-  81   1         // 20km, 49V < battery < 50.4V, 2.42V/5V
-  82   1              else if((Check2 < 0x1fb)&&(Check2 >= 0x1ef))            
-  83   1                      {
-  84   2                      voice_EN = 1;
-  85   2                      SC_Speech(10);  
-  86   2                      Delay(100);
-  87   2                      voice_EN = 0;
-  88   2                      }
-  89   1              // 15km, 47.8V < battery < 49V, 2.36V/5V 
-  90   1              else if((Check2 < 0x1ef)&&(Check2 >= 0x1e3))            
-  91   1                      {
-  92   2                      voice_EN = 1;
-  93   2                      SC_Speech(9);   
-  94   2                      Delay(100);
-  95   2                      voice_EN = 0;
-  96   2                      }
-  97   1              // 10km, 46.5V < battery <47.8V, 2.3V/5V
-  98   1              else if((Check2 < 0x1e3)&&(Check2 >= 0x1d7))            
-  99   1                      {
- 100   2                      voice_EN = 1;
- 101   2                      SC_Speech(8);   
- 102   2                      Delay(100);
- 103   2                      voice_EN = 0;
- 104   2                      }
- 105   1              // 5km, 45.1V < battery < 46.5V, 2.86V/4.93V
- 106   1              else if((Check2 < 0x1d7)&&(Check2 >= 0x1c9))            
- 107   1                      {
- 108   2                      voice_EN =1;
- 109   2                      SC_Speech(7);   
- 110   2                      Delay(100);
- 111   2                      voice_EN = 0;
- 112   2                      }                     
- 113   1              // battery is low, battery < 45.1V, 
- 114   1              else if(Check2 < 0x1c9)
- 115   1                      {
- 116   2                      motorBAT_low_speech();
-C51 COMPILER V9.51   BATTERY                                                               11/14/2014 13:39:24 PAGE 3   
+  55   2            Delay(100);
+  56   2            voice_EN = 0;
+  57   2            }
+  58   1         // 10km, 46.4V < battery <47.4V, 3.50V/4.9V
+  59   1         else if((Check2 < 0x2e5)&&(Check2 >= 0x2db))    
+  60   1            {
+  61   2            voice_EN = 1;
+  62   2            SC_Speech(8);     
+  63   2            Delay(100);
+  64   2            voice_EN = 0;
+  65   2            }
+  66   1         // 5km, 45.7V < battery < 46.4V, 3.45V/4.9V
+  67   1         else if((Check2 < 0x2db)&&(Check2 >= 0x2d0))    
+  68   1            {
+  69   2            voice_EN =1;
+  70   2            SC_Speech(7);     
+  71   2            Delay(100);
+  72   2            voice_EN = 0;
+  73   2            }                     
+  74   1         // battery is low, battery < 45.7V, 
+  75   1         else if(Check2 < 0x2d0)
+  76   1            {
+  77   2            motorBAT_low_speech();
+  78   2            }
+  79   1         }
+  80          /*----------------------------------------------------
+  81             verifybattery()  - Z4
+  82             voice alarm for battery status with power module
+  83          void verifybattery(tWord Check2)
+  84             {  
+  85             // battery is sufficient, battery > 50.4V, 2.48V/5V
+  86             if((Check2 >= 0x1fb))
+  87                {
+  88                voice_EN = 1;
+  89                SC_Speech(28);    
+  90                Delay(60);
+  91                voice_EN = 0;
+  92                }
+  93             // 20km, 49V < battery < 50.4V, 2.42V/5V
+  94             else if((Check2 < 0x1fb)&&(Check2 >= 0x1ef))    
+  95                {
+  96                voice_EN = 1;
+  97                SC_Speech(10);  
+  98                Delay(100);
+  99                voice_EN = 0;
+ 100                }
+ 101             // 15km, 47.8V < battery < 49V, 2.36V/5V 
+ 102             else if((Check2 < 0x1ef)&&(Check2 >= 0x1e3))    
+ 103                {
+ 104                voice_EN = 1;
+ 105                SC_Speech(9);     
+ 106                Delay(100);
+ 107                voice_EN = 0;
+ 108                }
+ 109             // 10km, 46.5V < battery <47.8V, 2.3V/5V
+ 110             else if((Check2 < 0x1e3)&&(Check2 >= 0x1d7))    
+ 111                {
+ 112                voice_EN = 1;
+ 113                SC_Speech(8);     
+ 114                Delay(100);
+ 115                voice_EN = 0;
+ 116                }
+C51 COMPILER V9.51   BATTERY                                                               12/22/2014 11:22:25 PAGE 3   
 
- 117   2                      }
- 118   1              }
- 119          /*---------------------------------------------------
- 120                  end of file
- 121          ----------------------------------------------------*/
+ 117             // 5km, 45.1V < battery < 46.5V, 2.86V/4.93V
+ 118             else if((Check2 < 0x1d7)&&(Check2 >= 0x1c9))    
+ 119                {
+ 120                voice_EN =1;
+ 121                SC_Speech(7);     
+ 122                Delay(100);
+ 123                voice_EN = 0;
+ 124                }                     
+ 125             // battery is low, battery < 45.1V, 
+ 126             else if(Check2 < 0x1c9)
+ 127                {
+ 128                motorBAT_low_speech();
+ 129                }
+ 130             }
+ 131          -----------------------------------------------------*/
+ 132          /*---------------------------------------------------
+ 133             end of file
+ 134          ----------------------------------------------------*/
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =    177    ----
+   CODE SIZE        =    199    ----
    CONSTANT SIZE    =   ----    ----
    XDATA SIZE       =   ----    ----
-   PDATA SIZE       =   ----    ----
-   DATA SIZE        =   ----       2
+   PDATA SIZE       =   ----       2
+   DATA SIZE        =   ----    ----
    IDATA SIZE       =   ----    ----
    BIT SIZE         =   ----    ----
 END OF MODULE INFORMATION.
